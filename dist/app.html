@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relay Console</title>
+<meta name="description" content="Relay console — orders, API keys, webhooks, billing, and account settings.">
+<link rel="canonical" href="https://relay-travel.ai/app.html">
+<meta property="og:title" content="Relay Console">
+<meta property="og:description" content="Relay console — orders, API keys, webhooks, billing, and account settings.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:image" content="https://relay-travel.ai/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:image" content="https://relay-travel.ai/og-image.png">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f7f6f3">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="relay.css">
+<style>
+  .shell { display: grid; grid-template-columns: 236px 1fr; min-height: 100vh; }
+
+  .sidebar {
+    background: var(--surface); border-right: 1px solid var(--line);
+    padding: 20px 14px; display: flex; flex-direction: column; gap: 20px;
+  }
+  .sidebar .brand { padding: 4px 8px; }
+  .env-badge {
+    margin: 0 8px; font-family: var(--mono); font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .05em; color: var(--signal);
+    background: var(--signal-soft); padding: 5px 9px; border-radius: 6px;
+    display: inline-flex; align-items: center; gap: 6px; width: fit-content;
+  }
+  .env-badge::before { content: ""; width: 6px; height: 6px; border-radius: 999px; background: var(--signal); }
+  nav.side { display: flex; flex-direction: column; gap: 2px; }
+  nav.side .navitem {
+    display: flex; align-items: center; padding: 9px 10px; border-radius: 8px;
+    cursor: pointer; color: var(--ink-soft); font-size: 13.5px; font-weight: 500;
+    border: none; background: none; text-align: left; width: 100%; font-family: var(--sans);
+  }
+  nav.side .navitem:hover { background: var(--surface-sunk); color: var(--ink); }
+  nav.side .navitem.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .side-foot {
+    margin-top: auto; padding: 12px 8px; font-size: 12px;
+    color: var(--ink-faint); border-top: 1px solid var(--line);
+  }
+  .side-foot .who { color: var(--ink-soft); word-break: break-all; display: block; margin-bottom: 8px; }
+  .linkbtn {
+    background: none; border: none; padding: 0; font-family: var(--sans);
+    font-size: 12px; color: var(--ink-soft); cursor: pointer; text-decoration: underline;
+  }
+
+  .content { padding: 34px 44px 60px; max-width: 940px; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .panel-head { margin-bottom: 26px; }
+  .panel-head h1 { font-family: var(--serif); font-size: 24px; margin: 0 0 6px; }
+  .panel-head p { color: var(--ink-soft); margin: 0; max-width: 62ch; font-size: 14px; }
+
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
+  .stat-mini { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+  .stat-mini .l { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-faint); margin-bottom: 6px; }
+  .stat-mini .v { font-family: var(--mono); font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  .table-scroll { overflow-x: auto; }
+  table.simple { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.simple th {
+    text-align: left; color: var(--ink-faint); font-weight: 600; font-size: 11px;
+    text-transform: uppercase; letter-spacing: .04em; padding: 8px 10px 8px 0;
+    border-bottom: 1px solid var(--line); white-space: nowrap;
+  }
+  table.simple td {
+    padding: 11px 10px 11px 0; border-bottom: 1px solid var(--line);
+    font-family: var(--mono); vertical-align: top;
+  }
+  table.simple tr:last-child td { border-bottom: none; }
+  td .flaglist { color: var(--signal); }
+  td .muted { color: var(--ink-faint); }
+
+  .empty {
+    border: 1px dashed var(--line-strong); border-radius: 12px; padding: 30px 26px;
+    text-align: center; color: var(--ink-soft); font-size: 13.5px; background: var(--surface-sunk);
+  }
+  .empty h4 { margin: 0 0 6px; font-size: 14.5px; color: var(--ink); font-weight: 600; }
+  .empty p { margin: 0 auto; max-width: 46ch; }
+
+  .key-field {
+    display: flex; align-items: center; gap: 8px; background: var(--surface-sunk);
+    border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px;
+    font-family: var(--mono); font-size: 13px; flex: 1; min-width: 0;
+  }
+  .key-field span.k { flex: 1; overflow-x: auto; white-space: nowrap; }
+  .icon-btn {
+    background: none; border: 1px solid var(--line-strong); border-radius: 6px;
+    padding: 5px 9px; cursor: pointer; font-family: var(--sans); font-size: 12px;
+    color: var(--ink-soft); font-weight: 500; white-space: nowrap;
+  }
+  .icon-btn:hover { color: var(--ink); border-color: var(--ink-faint); }
+
+  pre.snippet {
+    background: var(--code-bg); color: var(--code-fg); border: 1px solid var(--code-line);
+    border-radius: 10px; padding: 16px 18px;
+    overflow-x: auto; font-family: var(--mono); font-size: 12.5px; line-height: 1.6; margin: 0;
+  }
+
+  .locked-panel {
+    border: 1px dashed var(--line-strong); border-radius: 12px;
+    padding: 22px 24px; background: var(--surface-sunk);
+  }
+  .locked-panel h3 { margin: 0 0 6px; font-size: 14.5px; }
+  .locked-panel p { margin: 0 0 14px; color: var(--ink-soft); font-size: 13px; max-width: 56ch; }
+
+  .loading { color: var(--ink-faint); font-size: 13px; padding: 20px 0; }
+
+  /* expanded order row */
+  tr.order-row { cursor: pointer; }
+  tr.order-row:hover { background: var(--accent-soft); }
+  tr.detail-row > td { background: var(--surface-sunk); padding: 18px 10px 20px 0; }
+  .detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .detail-card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+  .detail-card .k {
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--ink-faint); margin-bottom: 8px;
+  }
+  .detail-card dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; font-size: 12.5px; }
+  .detail-card dt { color: var(--ink-soft); font-family: var(--sans); }
+  .detail-card dd { margin: 0; text-align: right; font-family: var(--mono); word-break: break-all; }
+  .resolution {
+    margin-top: 12px; padding: 11px 14px; border-radius: 9px;
+    border: 1px dashed var(--accent); background: var(--accent-soft); font-size: 12.5px;
+  }
+  .review-block {
+    margin-top: 12px; padding: 14px 16px; border: 1px solid var(--line);
+    border-radius: 10px; background: var(--surface);
+  }
+  .review-block .k {
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--ink-faint); margin-bottom: 6px;
+  }
+  .review-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 7px 0; border-top: 1px solid var(--line); font-size: 12.5px; flex-wrap: wrap;
+  }
+  .review-row:first-of-type { border-top: none; }
+  @media (max-width: 760px) { .detail-grid { grid-template-columns: 1fr; } }
+
+  @media (max-width: 760px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--line); align-items: center; }
+    nav.side { flex-direction: row; }
+    .side-foot { display: none; }
+    .content { padding: 24px 18px 48px; }
+    .field-grid, .stat-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div id="config-warn"></div>
+
+<div class="shell" id="shell" hidden>
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="mark"><img src="logo.png" alt=""></span>Relay</a>
+    <span class="env-badge" id="env-badge">Sandbox mode</span>
+    <nav class="side" id="nav">
+      <button class="navitem active" data-panel="orders" type="button">Orders</button>
+      <button class="navitem" data-panel="keys" type="button">API Keys</button>
+      <button class="navitem" data-panel="webhooks" type="button">Webhooks</button>
+      <button class="navitem" data-panel="billing" type="button">Billing</button>
+      <button class="navitem" data-panel="account" type="button">Account</button>
+    
+    <a href="docs.html" style="display:block;padding:9px 10px;font-size:13.5px;color:var(--ink-soft);text-decoration:none;">API docs &rarr;</a>
+    <a href="account.html" style="display:block;padding:9px 10px;font-size:13.5px;color:var(--ink-soft);text-decoration:none;">Profile &amp; settings &rarr;</a>
+    <a href="pricing.html" style="display:block;padding:9px 10px;font-size:13.5px;color:var(--ink-soft);text-decoration:none;">Plans &amp; pricing &rarr;</a>
+    </nav>
+    <div class="side-foot">
+      <span class="who" id="who"></span>
+      <button class="linkbtn" id="signout" type="button">Sign out</button>
+    </div>
+  </aside>
+
+  <main class="content">
+
+    <!-- ORDERS -->
+    <section class="panel active" id="panel-orders">
+      <div class="panel-head">
+        <h1>Orders</h1>
+        <p>Every order Relay has reconciled for your workspace, newest first. Each row is the verdict from comparing what the customer agreed to, what was charged, and what the supplier confirmed.</p>
+      </div>
+      <div class="stat-row">
+        <div class="stat-mini"><div class="l">Reconciled (30d)</div><div class="v" id="stat-total">—</div></div>
+        <div class="stat-mini"><div class="l">Flagged</div><div class="v" id="stat-flagged">—</div></div>
+        <div class="stat-mini"><div class="l">Clean</div><div class="v" id="stat-clean">—</div></div>
+      </div>
+      <div id="orders-body"><div class="loading">Loading orders…</div></div>
+
+      <div class="card" style="margin-top:18px;">
+        <h3>Detection accuracy</h3>
+        <p class="desc">How often our flags turn out to be right, by your own judgement.</p>
+        <div id="accuracy-body"><div class="loading">Loading…</div></div>
+      </div>
+    </section>
+
+    <!-- API KEYS -->
+    <section class="panel" id="panel-keys">
+      <div class="panel-head">
+        <h1>API keys</h1>
+        <p>Authenticate calls to <code id="api-endpoint">/v1/reconcile</code> with one of these. We store only a hash of each key — so we can't show it again after you create it, and neither can anyone who gets into our database.</p>
+      </div>
+
+      <div id="new-key-slot"></div>
+
+      <div class="card">
+        <div class="row" style="margin-bottom:16px;">
+          <div>
+            <h3 style="margin-bottom:2px;">Your keys</h3>
+            <p class="desc" style="margin:0;">Sandbox keys run against test data and never touch live orders.</p>
+          </div>
+          <button class="btn primary sm" id="create-key" type="button">Create sandbox key</button>
+        </div>
+        <div id="keys-body"><div class="loading">Loading keys…</div></div>
+      </div>
+
+      <div class="card">
+        <h3>Try it</h3>
+        <p class="desc">Paste this into a terminal with a key you just created.</p>
+        <pre class="snippet" id="curl-snippet"></pre>
+      </div>
+
+      <div class="locked-panel">
+        <h3>Live keys <span class="badge locked" style="margin-left:6px;">By request</span></h3>
+        <p>Live keys are issued once we've looked at real order data together and agreed on pilot scope. That keeps accuracy claims honest while the detection logic is still being tuned against real failures.</p>
+        <a class="btn primary sm" href="api-access.html">Request a live key</a>
+      </div>
+    </section>
+
+    <!-- WEBHOOKS -->
+    <section class="panel" id="panel-webhooks">
+      <div class="panel-head">
+        <h1>Webhooks</h1>
+        <p>Relay posts a verdict to this URL each time it reconciles an order, so you can act on a flag without polling.</p>
+      </div>
+      <div class="card">
+        <div class="field">
+          <label class="field-label" for="webhook-url">Endpoint URL</label>
+          <input type="url" id="webhook-url" placeholder="https://your-service.com/webhooks/relay">
+        </div>
+        <div class="field">
+          <label class="field-label">Send</label>
+          <div style="display:flex; gap:16px; flex-wrap:wrap; font-size:13px; color:var(--ink-soft);">
+            <label style="display:flex; gap:6px; align-items:center;"><input type="checkbox" id="ev-flagged" checked> order.flagged</label>
+            <label style="display:flex; gap:6px; align-items:center;"><input type="checkbox" id="ev-cleared" checked> order.cleared</label>
+          </div>
+        </div>
+        <div class="row" style="justify-content:flex-start; gap:10px;">
+          <button class="btn primary" id="save-webhook" type="button">Save endpoint</button>
+          <button class="btn ghost" id="clear-webhook" type="button">Remove</button>
+        </div>
+      </div>
+      <div class="card" id="secret-card" hidden>
+        <h3>Signing secret</h3>
+        <p class="desc">Every delivery carries an <code>X-Relay-Signature</code> header: the SHA-256 of this secret concatenated with the raw request body. Verify it before trusting a payload.</p>
+        <div class="key-field"><span class="k" id="webhook-secret"></span></div>
+      </div>
+    </section>
+
+    <!-- BILLING -->
+    <section class="panel" id="panel-billing">
+      <div class="panel-head">
+        <h1>Billing</h1>
+        <p>You're a design partner — nothing is charged automatically, and there's no card on file. Pricing gets agreed with you before a single invoice goes out.</p>
+      </div>
+      <div class="card">
+        <div class="row">
+          <div>
+            <h3>Current plan</h3>
+            <p class="desc" style="margin:0;">Design partner · no charge during pilot</p>
+          </div>
+          <span class="badge ok">Active</span>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Pricing models</h3>
+        <p class="desc">We'll pick one together based on your order volume when the pilot converts.</p>
+        <div class="table-scroll">
+          <table class="simple">
+            <thead><tr><th>Model</th><th>How it works</th></tr></thead>
+            <tbody>
+              <tr><td>Per order monitored</td><td style="font-family:var(--sans); color:var(--ink-soft);">Flat fee per order reconciled, whatever the outcome</td></tr>
+              <tr><td>Per order recovered</td><td style="font-family:var(--sans); color:var(--ink-soft);">Pay only for orders Relay catches and helps fix</td></tr>
+              <tr><td>% of amount recovered</td><td style="font-family:var(--sans); color:var(--ink-soft);">A share of the money actually recovered per incident</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="locked-panel">
+        <h3>Payment method</h3>
+        <p>There's deliberately no card form here. With no live billing running yet, a "connect card" button would be decoration — and a payment form that goes nowhere is worse than none. When your pilot converts, we'll set billing up with you directly.</p>
+        <a class="btn primary sm" href="pricing.html">See plans &amp; pricing</a>
+      </div>
+    </section>
+
+    <!-- ACCOUNT -->
+    <section class="panel" id="panel-account">
+      <div class="panel-head">
+        <h1>Account</h1>
+        <p>Your workspace details. These are stored against your workspace, not just this browser.</p>
+      </div>
+      <div class="card">
+        <h3>You</h3>
+        <p class="desc">How you appear in this workspace. Optional — leave it blank and we'll show your email.</p>
+        <div class="field" style="max-width:340px;">
+          <label class="field-label" for="acct-name">Your name</label>
+          <input type="text" id="acct-name" placeholder="Yuki Duan">
+        </div>
+        <button class="btn primary" id="save-profile" type="button">Save</button>
+      </div>
+
+      <div class="card">
+        <h3>Workspace</h3>
+        <p class="desc">Shown on invoices and in any report we send you. Working solo? Leave the company blank — your own name works fine.</p>
+        <div class="field-grid">
+          <div class="field">
+            <label class="field-label" for="acct-company">Company name</label>
+            <input type="text" id="acct-company" placeholder="Acme Travel Co.">
+          </div>
+          <div class="field">
+            <label class="field-label" for="acct-stack">Primary stack</label>
+            <input type="text" id="acct-stack" placeholder="Stripe + Duffel">
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label" for="acct-email">Contact email</label>
+          <input type="email" id="acct-email" placeholder="you@company.com">
+        </div>
+        <button class="btn primary" id="save-account" type="button">Save changes</button>
+      </div>
+
+      <div class="card">
+        <h3>Sign-in</h3>
+        <p class="desc" style="margin-bottom:0;" id="auth-email"></p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script src="setup.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js"></script>
+<script>
+(function () {
+  // No config yet? Offer to take it here rather than dead-ending on a banner.
+  if (!window.RELAY_SETUP.isConfigured()) {
+    document.getElementById("shell").remove();
+    window.RELAY_SETUP.render("config-warn");
+    return;
+  }
+  var cfg = window.RELAY_CONFIG || {};
+
+  // Running on values pasted into this browser, not deployed config. Say so —
+  // otherwise it looks configured to you and broken to everyone else.
+  if (window.RELAY_SETUP.isTemporary()) {
+    document.getElementById("config-warn").innerHTML =
+      '<div class="config-strip">Using config saved in this browser only. Put these values in ' +
+      '<code>config.js</code> and redeploy to make it real.<button id="cfg-clear">Clear</button></div>';
+    document.getElementById("cfg-clear").addEventListener("click", window.RELAY_SETUP.clear);
+  }
+  // Append, don't overwrite — the temporary-config strip may already be here.
+  if (!window.supabase) {
+    document.getElementById("config-warn").insertAdjacentHTML("beforeend",
+      '<div class="config-warn">Couldn\'t load the data library — an ad blocker or network filter may be blocking it. Disable it for this site and reload.</div>');
+    return;
+  }
+
+  var sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+  var apiBase = cfg.API_BASE || (cfg.SUPABASE_URL + "/functions/v1");
+  var state = { workspace: null, user: null };
+
+  var toastEl = document.getElementById("toast");
+  function toast(t) {
+    toastEl.textContent = t;
+    toastEl.classList.add("show");
+    setTimeout(function () { toastEl.classList.remove("show"); }, 2200);
+  }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function fmtDate(iso) {
+    if (!iso) return "—";
+    var d = new Date(iso);
+    return d.toLocaleDateString(undefined, { month: "short", day: "numeric" }) + " " +
+           d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+  }
+
+  // ---- boot: require a session ----
+  (async function boot() {
+    var sess = await sb.auth.getSession();
+    if (!sess.data || !sess.data.session) { location.replace("login.html"); return; }
+    state.user = sess.data.session.user;
+
+    var mem = await sb.from("workspace_members")
+      .select("workspace_id, display_name").limit(1).maybeSingle();
+    if (mem.error || !mem.data) {
+      document.body.innerHTML =
+        '<div style="padding:60px;text-align:center;font-family:var(--sans)">' +
+        "<p>Your account isn't attached to a workspace yet.</p>" +
+        '<p style="color:#888">If you just signed up, reload in a moment. If this persists, email us.</p></div>';
+      return;
+    }
+
+    var ws = await sb.from("workspaces").select("*").eq("id", mem.data.workspace_id).single();
+    if (ws.error) { toast("Couldn't load workspace"); return; }
+    state.workspace = ws.data;
+
+    // Prefer a name the person chose; fall back to whatever Google/GitHub gave
+    // us at sign-in; fall back to the email. Never show a blank.
+    var meta = state.user.user_metadata || {};
+    state.displayName =
+      (mem.data.display_name || meta.full_name || meta.name || meta.user_name || "").trim();
+
+    document.getElementById("shell").hidden = false;
+    document.getElementById("who").textContent = state.displayName || state.user.email;
+    document.getElementById("auth-email").textContent =
+      state.user.email + (state.user.app_metadata?.provider &&
+        state.user.app_metadata.provider !== "email"
+          ? " · via " + state.user.app_metadata.provider
+          : "");
+    document.getElementById("api-endpoint").textContent = apiBase + "/reconcile";
+
+    document.getElementById("acct-name").value = state.displayName;
+    document.getElementById("acct-company").value = state.workspace.name || "";
+    document.getElementById("acct-stack").value = state.workspace.stack || "";
+    document.getElementById("acct-email").value = state.workspace.contact_email || state.user.email;
+
+    renderCurl(null);
+    loadOrders();
+    loadAccuracy();
+    loadKeys();
+    loadWebhook();
+  })();
+
+  // ---- nav ----
+  document.querySelectorAll(".navitem").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".navitem").forEach(function (b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("active"); });
+      document.getElementById("panel-" + btn.dataset.panel).classList.add("active");
+    });
+  });
+
+  document.getElementById("signout").addEventListener("click", async function () {
+    await sb.auth.signOut();
+    location.replace("login.html");
+  });
+
+  // ---- orders ----
+  async function loadOrders() {
+    var since = new Date(Date.now() - 30 * 86400000).toISOString();
+    var res = await sb.from("orders").select("*").gte("created_at", since)
+      .order("created_at", { ascending: false }).limit(100);
+
+    var body = document.getElementById("orders-body");
+    if (res.error) { body.innerHTML = '<div class="notice error">' + esc(res.error.message) + "</div>"; return; }
+
+    var rows = res.data || [];
+    var flagged = rows.filter(function (r) { return r.verdict === "flagged"; }).length;
+    document.getElementById("stat-total").textContent = rows.length;
+    document.getElementById("stat-flagged").textContent = flagged;
+    document.getElementById("stat-clean").textContent = rows.length - flagged;
+
+    if (!rows.length) {
+      body.innerHTML =
+        '<div class="empty"><h4>No orders yet</h4>' +
+        "<p>As soon as your first call to <code>/v1/reconcile</code> lands, the verdict shows up here. " +
+        "Create a sandbox key under API Keys and run the sample request to see it work.</p></div>";
+      return;
+    }
+
+    // Which flags has this workspace already judged? Used to show what's
+    // still awaiting review, and to avoid asking twice.
+    var reviewed = {};
+    var rv = await sb.from("flag_reviews").select("order_id, flag_code, assessment");
+    (rv.data || []).forEach(function (r) { reviewed[r.order_id + "|" + r.flag_code] = r.assessment; });
+
+    body.innerHTML =
+      '<div class="card" style="padding:16px 24px;"><div class="table-scroll"><table class="simple">' +
+      "<thead><tr><th>Order</th><th>When</th><th>Flags</th><th>Verdict</th></tr></thead><tbody>" +
+      rows.map(function (o) {
+        var flags = (o.flags || []).length
+          ? '<span class="flaglist">' + esc(o.flags.join(", ")) + "</span>"
+          : '<span class="muted">—</span>';
+        var badge = o.verdict === "flagged"
+          ? '<span class="badge warn">flagged</span>'
+          : '<span class="badge ok">cleared</span>';
+        var caught = o.flagged_by === "timeout"
+          ? '<div class="muted" style="font-size:11px;margin-top:3px;">caught by timeout</div>' : "";
+        return '<tr class="order-row" data-id="' + esc(o.id) + '">' +
+               "<td>" + esc(o.external_id) + caught + "</td><td>" + esc(fmtDate(o.created_at)) +
+               "</td><td>" + flags + "</td><td>" + badge + "</td></tr>" +
+               '<tr class="detail-row" id="d-' + esc(o.id) + '" hidden><td colspan="4">' +
+               detailHTML(o, reviewed) + "</td></tr>";
+      }).join("") +
+      "</tbody></table></div></div>";
+
+    body.querySelectorAll(".order-row").forEach(function (tr) {
+      tr.addEventListener("click", function () {
+        var d = document.getElementById("d-" + tr.dataset.id);
+        d.hidden = !d.hidden;
+      });
+    });
+
+    body.querySelectorAll(".review-btn").forEach(function (btn) {
+      btn.addEventListener("click", async function (e) {
+        e.stopPropagation();
+        await submitReview(btn.dataset.order, btn.dataset.flag, btn.dataset.assessment);
+      });
+    });
+  }
+
+  /** The expanded row: the three views side by side, plus the review prompt.
+   *  Showing all three is the point — a customer disputing a verdict should be
+   *  able to see exactly what we compared, not just what we concluded. */
+  function detailHTML(o, reviewed) {
+    var view = function (title, obj) {
+      var entries = Object.entries(obj || {});
+      return '<div class="detail-card"><div class="k">' + esc(title) + "</div>" +
+        (entries.length
+          ? "<dl>" + entries.map(function (kv) {
+              return "<dt>" + esc(kv[0]) + "</dt><dd>" + esc(
+                typeof kv[1] === "object" ? JSON.stringify(kv[1]) : kv[1]) + "</dd>";
+            }).join("") + "</dl>"
+          : '<div class="muted" style="font-size:12px;">nothing recorded</div>') +
+        "</div>";
+    };
+
+    var review = "";
+    if (o.verdict === "flagged" && (o.flags || []).length) {
+      review = '<div class="review-block"><div class="k">Was this right?</div>' +
+        "<p class=\"muted\" style=\"font-size:12.5px;margin:0 0 10px;\">" +
+        "Telling us when a flag is wrong is how the detection gets tuned — and how we can " +
+        "show you a real precision figure rather than a claim.</p>" +
+        o.flags.map(function (f) {
+          var prior = reviewed[o.id + "|" + f];
+          if (prior) {
+            return '<div class="review-row"><code>' + esc(f) + "</code>" +
+                   '<span class="badge ' + (prior === "correct" ? "ok" : "warn") + '">' +
+                   (prior === "correct" ? "confirmed correct" : "marked false positive") + "</span></div>";
+          }
+          return '<div class="review-row"><code>' + esc(f) + "</code>" +
+            '<span><button class="icon-btn review-btn" data-order="' + esc(o.id) +
+              '" data-flag="' + esc(f) + '" data-assessment="correct">Correct</button> ' +
+            '<button class="icon-btn review-btn" data-order="' + esc(o.id) +
+              '" data-flag="' + esc(f) + '" data-assessment="false_positive">False alarm</button></span></div>';
+        }).join("") + "</div>";
+    }
+
+    return '<div class="detail-grid">' +
+availableViews(o, view) + "</div>" +
+      (o.resolution ? '<div class="resolution"><b>Suggested resolution:</b> ' + esc(o.resolution) + "</div>" : "") +
+      review;
+  }
+
+  function availableViews(o, view) {
+    return view("User agreed to", o.agreed) + view("Actually charged", o.charged) +
+           view("Supplier confirmed", o.confirmed);
+  }
+
+  async function submitReview(orderId, flagCode, assessment) {
+    var r = await sb.from("flag_reviews").insert({
+      order_id: orderId,
+      workspace_id: state.workspace.id,
+      flag_code: flagCode,
+      assessment: assessment,
+      reviewed_by: state.user.id,
+    });
+    if (r.error) { toast("Couldn't save: " + r.error.message); return; }
+    toast(assessment === "correct" ? "Thanks — recorded as correct" : "Thanks — recorded as a false alarm");
+    loadOrders();
+    loadAccuracy();
+  }
+
+  /** Precision per flag type. This is the number a prospect asks for. */
+  async function loadAccuracy() {
+    var el = document.getElementById("accuracy-body");
+    if (!el) return;
+    var res = await sb.from("flag_accuracy").select("*");
+    if (res.error) { el.innerHTML = ""; return; }
+    var rows = res.data || [];
+    if (!rows.length) {
+      el.innerHTML = '<p class="desc" style="margin:0;">Nothing reviewed yet. Once you mark a few ' +
+        "flags correct or wrong, precision per flag type appears here.</p>";
+      return;
+    }
+    el.innerHTML = '<div class="table-scroll"><table class="simple"><thead><tr>' +
+      "<th>Flag</th><th>Reviewed</th><th>Correct</th><th>False alarms</th><th>Precision</th>" +
+      "</tr></thead><tbody>" +
+      rows.map(function (r) {
+        return "<tr><td>" + esc(r.flag_code) + "</td><td>" + r.reviewed + "</td><td>" +
+               r.correct + "</td><td>" + r.false_positives + "</td><td>" +
+               (r.precision_pct == null ? "—" : r.precision_pct + "%") + "</td></tr>";
+      }).join("") + "</tbody></table></div>";
+  }
+
+  // ---- api keys ----
+  async function sha256Hex(str) {
+    var buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+    return Array.prototype.map.call(new Uint8Array(buf), function (b) {
+      return b.toString(16).padStart(2, "0");
+    }).join("");
+  }
+  function randomKey() {
+    var chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+    var bytes = new Uint8Array(28);
+    crypto.getRandomValues(bytes);
+    var out = "";
+    for (var i = 0; i < bytes.length; i++) out += chars[bytes[i] % chars.length];
+    return "sk_test_" + out;
+  }
+
+  function renderCurl(key) {
+    var shown = key || "sk_test_YOUR_KEY";
+    document.getElementById("curl-snippet").textContent =
+      "curl -X POST " + apiBase + "/reconcile \\\n" +
+      '  -H "Authorization: Bearer ' + shown + '" \\\n' +
+      '  -H "Content-Type: application/json" \\\n' +
+      "  -d '{\n" +
+      '    "order_id": "ord_demo_1",\n' +
+      '    "agreed":    { "amount": 2480, "currency": "USD", "route": "SFO-NRT" },\n' +
+      '    "charged":   { "amount": 2480, "currency": "USD", "capture_count": 1 },\n' +
+      '    "confirmed": { "supplier": "duffel", "status": "failed" }\n' +
+      "  }'";
+  }
+
+  async function loadKeys() {
+    var res = await sb.from("api_keys").select("*").order("created_at", { ascending: false });
+    var body = document.getElementById("keys-body");
+    if (res.error) { body.innerHTML = '<div class="notice error">' + esc(res.error.message) + "</div>"; return; }
+
+    var keys = res.data || [];
+    if (!keys.length) {
+      body.innerHTML = '<div class="empty" style="padding:22px;"><h4>No keys yet</h4>' +
+        "<p>Create a sandbox key to start sending orders.</p></div>";
+      return;
+    }
+
+    body.innerHTML =
+      '<div class="table-scroll"><table class="simple">' +
+      "<thead><tr><th>Key</th><th>Mode</th><th>Created</th><th>Last used</th><th></th></tr></thead><tbody>" +
+      keys.map(function (k) {
+        var revoked = !!k.revoked_at;
+        return "<tr>" +
+          "<td>" + esc(k.key_prefix) + "…" +
+            (revoked ? ' <span class="badge locked">revoked</span>' : "") + "</td>" +
+          "<td>" + esc(k.mode) + "</td>" +
+          "<td>" + esc(fmtDate(k.created_at)) + "</td>" +
+          '<td class="' + (k.last_used_at ? "" : "muted") + '">' + esc(fmtDate(k.last_used_at)) + "</td>" +
+          "<td>" + (revoked ? "" :
+            '<button class="icon-btn revoke" data-id="' + esc(k.id) + '">Revoke</button>') + "</td>" +
+        "</tr>";
+      }).join("") +
+      "</tbody></table></div>";
+
+    body.querySelectorAll(".revoke").forEach(function (btn) {
+      btn.addEventListener("click", async function () {
+        if (!confirm("Revoke this key? Any service still using it will start getting 401s.")) return;
+        var r = await sb.from("api_keys")
+          .update({ revoked_at: new Date().toISOString() }).eq("id", btn.dataset.id);
+        if (r.error) { toast("Couldn't revoke: " + r.error.message); return; }
+        toast("Key revoked");
+        loadKeys();
+      });
+    });
+  }
+
+  document.getElementById("create-key").addEventListener("click", async function () {
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = "Creating…";
+    try {
+      var raw = randomKey();
+      var hash = await sha256Hex(raw);
+      var r = await sb.from("api_keys").insert({
+        workspace_id: state.workspace.id,
+        key_hash: hash,
+        key_prefix: raw.slice(0, 16),
+        mode: "test",
+        name: "Sandbox key",
+      });
+      if (r.error) throw r.error;
+
+      document.getElementById("new-key-slot").innerHTML =
+        '<div class="card" style="border-color:var(--accent);">' +
+        "<h3>Your new sandbox key</h3>" +
+        '<p class="desc">This is the only time it will ever be shown — we store just a hash. Copy it now.</p>' +
+        '<div class="key-field"><span class="k" id="fresh-key">' + esc(raw) + "</span>" +
+        '<button class="icon-btn" id="copy-fresh">Copy</button></div></div>';
+
+      document.getElementById("copy-fresh").addEventListener("click", function () {
+        if (navigator.clipboard) navigator.clipboard.writeText(raw).catch(function () {});
+        toast("Key copied");
+      });
+
+      renderCurl(raw);
+      loadKeys();
+      toast("Sandbox key created");
+    } catch (e) {
+      toast("Couldn't create key: " + (e.message || e));
+    }
+    btn.disabled = false;
+    btn.textContent = "Create sandbox key";
+  });
+
+  // ---- webhooks ----
+  async function loadWebhook() {
+    var res = await sb.from("webhooks").select("*").maybeSingle();
+    if (res.error || !res.data) return;
+    document.getElementById("webhook-url").value = res.data.url || "";
+    var ev = res.data.events || [];
+    document.getElementById("ev-flagged").checked = ev.indexOf("order.flagged") !== -1;
+    document.getElementById("ev-cleared").checked = ev.indexOf("order.cleared") !== -1;
+    document.getElementById("webhook-secret").textContent = res.data.secret;
+    document.getElementById("secret-card").hidden = false;
+  }
+
+  document.getElementById("save-webhook").addEventListener("click", async function () {
+    var url = document.getElementById("webhook-url").value.trim();
+    if (!url) { toast("Enter a URL first"); return; }
+    if (!/^https:\/\//i.test(url)) { toast("Endpoint must be https://"); return; }
+
+    var events = [];
+    if (document.getElementById("ev-flagged").checked) events.push("order.flagged");
+    if (document.getElementById("ev-cleared").checked) events.push("order.cleared");
+
+    var r = await sb.from("webhooks")
+      .upsert({ workspace_id: state.workspace.id, url: url, events: events }, { onConflict: "workspace_id" });
+    if (r.error) { toast("Couldn't save: " + r.error.message); return; }
+    toast("Endpoint saved");
+    loadWebhook();
+  });
+
+  document.getElementById("clear-webhook").addEventListener("click", async function () {
+    var r = await sb.from("webhooks").delete().eq("workspace_id", state.workspace.id);
+    if (r.error) { toast("Couldn't remove: " + r.error.message); return; }
+    document.getElementById("webhook-url").value = "";
+    document.getElementById("secret-card").hidden = true;
+    toast("Endpoint removed");
+  });
+
+  // ---- profile (the person, not the workspace) ----
+  document.getElementById("save-profile").addEventListener("click", async function () {
+    var name = document.getElementById("acct-name").value.trim();
+
+    // Written in two places on purpose: auth metadata is the person's own
+    // record and survives them joining other workspaces; workspace_members is
+    // the copy teammates can see without reading anyone's auth record.
+    var authRes = await sb.auth.updateUser({ data: { full_name: name || null } });
+    if (authRes.error) { toast("Couldn't save: " + authRes.error.message); return; }
+
+    var memRes = await sb.from("workspace_members")
+      .update({ display_name: name || null })
+      .eq("workspace_id", state.workspace.id)
+      .eq("user_id", state.user.id);
+    if (memRes.error) { toast("Couldn't save: " + memRes.error.message); return; }
+
+    state.displayName = name;
+    document.getElementById("who").textContent = name || state.user.email;
+    toast(name ? "Saved" : "Name cleared");
+  });
+
+  // ---- workspace ----
+  document.getElementById("save-account").addEventListener("click", async function () {
+    var r = await sb.from("workspaces").update({
+      name: document.getElementById("acct-company").value.trim(),
+      stack: document.getElementById("acct-stack").value.trim(),
+      contact_email: document.getElementById("acct-email").value.trim(),
+    }).eq("id", state.workspace.id);
+    if (r.error) { toast("Couldn't save: " + r.error.message); return; }
+    toast("Saved");
+  });
+})();
+</script>
+</body>
+</html>

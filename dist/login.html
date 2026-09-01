@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign in · Relay</title>
+<meta name="description" content="Sign in to the Relay console.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f7f6f3">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="relay.css">
+<style>
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  .wrap {
+    flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px;
+  }
+  .auth { width: 100%; max-width: 380px; }
+  .auth .brand { justify-content: center; margin-bottom: 26px; font-size: 19px; }
+  .auth-card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 14px; padding: 28px 26px;
+  }
+  .auth h1 {
+    font-family: var(--serif); font-size: 20px; margin: 0 0 4px; font-weight: 600;
+  }
+  .auth .sub { color: var(--ink-soft); font-size: 13px; margin: 0 0 22px; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 22px; border-bottom: 1px solid var(--line); }
+  .tab {
+    flex: 1; background: none; border: none; border-bottom: 2px solid transparent;
+    font-family: var(--sans); font-size: 13.5px; font-weight: 600; color: var(--ink-faint);
+    padding: 9px 4px; cursor: pointer;
+  }
+  .tab.active { color: var(--ink); border-bottom-color: var(--accent); }
+  .foot { text-align: center; font-size: 12.5px; color: var(--ink-faint); margin-top: 18px; }
+  .foot a { color: var(--ink-soft); }
+
+  .oauth { display: flex; flex-direction: column; gap: 9px; }
+  .oauth-btn {
+    width: 100%; justify-content: center; gap: 10px;
+    border-color: var(--line-strong); background: var(--surface); color: var(--ink);
+    font-size: 13.5px; padding: 11px 15px;
+  }
+  .oauth-btn:hover:not(:disabled) { border-color: var(--ink-faint); background: var(--surface-sunk); }
+  .oauth-btn svg { flex: none; }
+
+  .or {
+    display: flex; align-items: center; gap: 12px;
+    margin: 18px 0; color: var(--ink-faint); font-size: 11.5px;
+    text-transform: uppercase; letter-spacing: .08em;
+  }
+  .or::before, .or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+  .opt {
+    font-weight: 400; color: var(--ink-faint); text-transform: none;
+    letter-spacing: 0; font-size: 11.5px; margin-left: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div id="config-warn"></div>
+
+<div class="wrap">
+  <div class="auth">
+    <a class="brand" href="index.html"><span class="mark"><img src="logo.png" alt=""></span>Relay</a>
+
+    <div class="auth-card">
+      <div class="tabs">
+        <button class="tab active" data-mode="signin" type="button">Sign in</button>
+        <button class="tab" data-mode="signup" type="button">Create account</button>
+      </div>
+
+      <h1 id="head">Welcome back</h1>
+      <p class="sub" id="sub">Sign in to see your reconciled orders.</p>
+
+      <div id="msg"></div>
+
+      <div class="oauth">
+        <button class="btn oauth-btn" type="button" data-provider="google">
+          <svg viewBox="0 0 18 18" width="17" height="17" aria-hidden="true">
+            <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/>
+            <path fill="#34A853" d="M9 18c2.43 0 4.47-.81 5.96-2.18l-2.92-2.26c-.81.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/>
+            <path fill="#FBBC05" d="M3.97 10.72a5.41 5.41 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3.01-2.33z"/>
+            <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/>
+          </svg>
+          Continue with Google
+        </button>
+        <button class="btn oauth-btn" type="button" data-provider="github">
+          <svg viewBox="0 0 16 16" width="17" height="17" aria-hidden="true" fill="currentColor">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+          </svg>
+          Continue with GitHub
+        </button>
+      </div>
+
+      <div class="or"><span>or</span></div>
+
+      <form id="form" novalidate>
+        <div id="signup-fields" hidden>
+          <div class="field">
+            <label class="field-label" for="fullname">Your name <span class="opt">optional</span></label>
+            <input type="text" id="fullname" autocomplete="name" placeholder="Yuki Duan">
+          </div>
+          <div class="field">
+            <label class="field-label" for="company">Company <span class="opt">optional</span></label>
+            <input type="text" id="company" autocomplete="organization" placeholder="Acme Travel Co.">
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label" for="email">Email</label>
+          <input type="email" id="email" autocomplete="email" required placeholder="you@example.com">
+        </div>
+        <div class="field">
+          <label class="field-label" for="password">Password</label>
+          <input type="password" id="password" autocomplete="current-password" required placeholder="At least 8 characters">
+        </div>
+        <button class="btn primary block" id="submit" type="submit">Sign in</button>
+      </form>
+    </div>
+
+    <p class="foot">
+      Not set up yet? <a href="contact.html">Talk to us first</a> ·
+      <a href="index.html">Back to relay-travel.ai</a>
+    </p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script src="setup.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js"></script>
+<script>
+(function () {
+  if (!window.RELAY_SETUP.isConfigured()) {
+    document.querySelector(".wrap").remove();
+    window.RELAY_SETUP.render("config-warn");
+    return;
+  }
+  var cfg = window.RELAY_CONFIG || {};
+  var configured = true;
+
+  if (window.RELAY_SETUP.isTemporary()) {
+    document.getElementById("config-warn").innerHTML =
+      '<div class="config-strip">Using config saved in this browser only.' +
+      '<button id="cfg-clear">Clear</button></div>';
+    document.getElementById("cfg-clear").addEventListener("click", window.RELAY_SETUP.clear);
+  }
+  // Append, don't overwrite — the temporary-config strip may already be here.
+  if (!window.supabase) {
+    document.getElementById("config-warn").insertAdjacentHTML("beforeend",
+      '<div class="config-warn">Couldn\'t load the authentication library — an ad blocker or network filter may be blocking it. Disable it for this site and reload.</div>');
+  }
+
+  var sb = configured && window.supabase
+    ? window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY)
+    : null;
+
+  // Where to land after signing in. A gated page (checkout, account) sends
+  // ?next=... so the visitor is returned to exactly what they were trying to
+  // reach. Only same-site relative paths are honoured — an absolute URL here
+  // would be an open redirect, which is how phishing links get laundered
+  // through a legitimate login page.
+  var params = new URLSearchParams(location.search);
+  var nextRaw = params.get("next") || "app.html";
+  var NEXT = /^[a-z0-9_-]+\.html(\?[^#]*)?$/i.test(nextRaw) ? nextRaw : "app.html";
+  var nextUrl = new URL(NEXT, window.location.href).toString();
+
+  var mode = params.get("mode") === "signup" ? "signup" : "signin";
+  var msgEl = document.getElementById("msg");
+  var toastEl = document.getElementById("toast");
+
+  function toast(t) {
+    toastEl.textContent = t;
+    toastEl.classList.add("show");
+    setTimeout(function () { toastEl.classList.remove("show"); }, 2200);
+  }
+  function message(text, kind) {
+    msgEl.innerHTML = text
+      ? '<div class="notice ' + (kind || "") + '">' + text + "</div>"
+      : "";
+  }
+
+  // Already signed in? Go straight to the console.
+  if (sb) {
+    sb.auth.getSession().then(function (r) {
+      if (r.data && r.data.session) location.replace(NEXT);
+    });
+  }
+
+  document.querySelectorAll(".tab").forEach(function (tab) {
+    tab.addEventListener("click", function () {
+      document.querySelectorAll(".tab").forEach(function (t) { t.classList.remove("active"); });
+      tab.classList.add("active");
+      mode = tab.dataset.mode;
+      var signup = mode === "signup";
+      document.getElementById("head").textContent = signup ? "Create your account" : "Welcome back";
+      document.getElementById("sub").textContent = signup
+        ? "We'll set up your workspace and a sandbox API key."
+        : "Sign in to see your reconciled orders.";
+      document.getElementById("signup-fields").hidden = !signup;
+      document.getElementById("submit").textContent = signup ? "Create account" : "Sign in";
+      document.getElementById("password").setAttribute(
+        "autocomplete", signup ? "new-password" : "current-password"
+      );
+      message("");
+    });
+  });
+
+  // Arriving from "Create an account" — open on the signup tab rather than
+  // making the visitor find it.
+  if (mode === "signup") {
+    var signupTab = document.querySelector('.tab[data-mode="signup"]');
+    if (signupTab) signupTab.click();
+  }
+
+  // --- Google / GitHub ---
+  // Supabase handles the whole redirect dance; we only say where to land after.
+  document.querySelectorAll(".oauth-btn").forEach(function (btn) {
+    btn.addEventListener("click", async function () {
+      if (!sb) { message("No database connected yet. See config.js.", "error"); return; }
+      var provider = btn.dataset.provider;
+      btn.disabled = true;
+      message("");
+      try {
+        var res = await sb.auth.signInWithOAuth({
+          provider: provider,
+          options: {
+            // Absolute URL, so it works the same locally and on relay-travel.ai.
+            redirectTo: nextUrl,
+          },
+        });
+        if (res.error) throw res.error;
+        // On success the browser is redirected away; nothing after this runs.
+      } catch (err) {
+        var hint = /provider is not enabled/i.test(err.message || "")
+          ? " — enable it in Supabase under Authentication → Providers."
+          : "";
+        message((err.message || "Could not start sign-in.") + hint, "error");
+        btn.disabled = false;
+      }
+    });
+  });
+
+  document.getElementById("form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    if (!sb) { message("No database connected yet. See config.js.", "error"); return; }
+
+    var email = document.getElementById("email").value.trim();
+    var password = document.getElementById("password").value;
+    var btn = document.getElementById("submit");
+
+    if (!email || !password) { message("Email and password are both required.", "error"); return; }
+    if (mode === "signup" && password.length < 8) {
+      message("Use at least 8 characters for your password.", "error"); return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = mode === "signup" ? "Creating…" : "Signing in…";
+    message("");
+
+    try {
+      if (mode === "signup") {
+        // Both optional. Empty strings are dropped rather than stored, so the
+        // workspace-naming trigger falls through to its next-best guess
+        // instead of naming a workspace "".
+        var meta = {};
+        var fullName = document.getElementById("fullname").value.trim();
+        var company = document.getElementById("company").value.trim();
+        if (fullName) meta.full_name = fullName;
+        if (company) meta.company = company;
+
+        var res = await sb.auth.signUp({
+          email: email,
+          password: password,
+          options: {
+            data: meta,
+            emailRedirectTo: nextUrl,
+          },
+        });
+        if (res.error) throw res.error;
+        if (res.data.session) {
+          location.replace(NEXT);
+        } else {
+          message("Check your inbox — we sent a confirmation link to " + email + ".", "good");
+          btn.textContent = "Create account";
+          btn.disabled = false;
+        }
+      } else {
+        var signin = await sb.auth.signInWithPassword({ email: email, password: password });
+        if (signin.error) throw signin.error;
+        location.replace(NEXT);
+      }
+    } catch (err) {
+      message(err.message || "Something went wrong. Try again.", "error");
+      btn.disabled = false;
+      btn.textContent = mode === "signup" ? "Create account" : "Sign in";
+    }
+  });
+})();
+</script>
+</body>
+</html>

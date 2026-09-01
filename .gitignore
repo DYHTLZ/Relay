@@ -1,0 +1,28 @@
+# ── never commit real credentials ─────────────────────────────
+.env
+.env.*
+*.pem
+*.key
+
+# ── deploy config stays local; commit the template instead ────
+# dist/config.example.js is the committed template.
+dist/config.js
+
+# ── generated ─────────────────────────────────────────────────
+supabase/functions/*/bundled.ts
+findings.html
+findings.csv
+
+# ── local noise ───────────────────────────────────────────────
+node_modules/
+.DS_Store
+*.log
+
+# ── core engine — closed source, intentionally not in this repo ──
+supabase/
+tests/
+tools/
+01_target_list_and_outreach.md
+04_backend_setup.md
+05_watcher_setup.md
+07_integrations_plan.md

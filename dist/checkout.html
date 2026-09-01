@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="relay.css">
+<link rel="stylesheet" href="site.css">
+<title>Checkout — Relay</title>
+<meta name="robots" content="noindex">
+</head>
+<body class="page">
+<div id="nav"><nav class="top"><div class="wrap"><a class="wordmark" href="index.html"><span class="baton"><img src="logo.png" alt=""></span>Relay</a><div class="navlinks"><a href="product.html">Product</a><a href="pricing.html">Pricing</a><a href="docs.html">Docs</a><a href="demo.html">Live demo</a><a href="contact.html">Contact</a></div><div class="nav-right" id="nav-right"><a class="nav-signin" href="login.html">Sign in</a><a class="nav-cta" href="login.html?mode=signup&amp;next=app.html">Start free</a></div><button class="nav-burger" id="nav-burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav-drawer"><span></span><span></span><span></span></button></div><div class="nav-drawer" id="nav-drawer" hidden><a href="product.html">Product</a><a href="pricing.html">Pricing</a><a href="docs.html">Docs</a><a href="demo.html">Live demo</a><a href="contact.html">Contact</a><a class="drawer-cta" href="login.html?mode=signup&amp;next=app.html">Start free sandbox</a><a class="drawer-alt" href="login.html">Sign in</a></div></nav></div>
+<div id="config-warn"></div>
+
+<header class="page-head">
+  <div class="wrap narrow">
+    <span class="eyebrow">Checkout</span>
+    <h1 id="head">Confirm your plan</h1>
+    <p class="lede" id="sub">Review what you're subscribing to before anything is charged.</p>
+  </div>
+</header>
+
+<section style="padding-top:24px">
+  <div class="wrap narrow">
+    <div id="msg"></div>
+    <div class="rows" id="summary"></div>
+
+    <div class="ctas">
+      <button class="btn primary lg" id="pay" type="button">Continue to payment</button>
+      <a class="btn ghost lg" href="pricing.html">Back to pricing</a>
+    </div>
+
+    <p class="foot-note">Payment is handled by Stripe. Relay never sees or stores your card details —
+      your card number goes from your browser to Stripe directly, and we receive only a subscription
+      reference. You can cancel at any time from your account page.</p>
+  </div>
+</section>
+
+<div class="toast" id="toast"></div>
+<div id="site-footer"><footer><div class="wrap"><div class="cols"><div class="col"><h4>Product</h4><a href="product.html">Overview</a><a href="pricing.html">Pricing</a><a href="demo.html">Live demo</a><a href="app.html">Console</a></div><div class="col"><h4>Developers</h4><a href="docs.html">API reference</a><a href="api-access.html">Request API access</a><a href="docs.html#webhooks">Webhooks</a><a href="docs.html#errors">Errors</a></div><div class="col"><h4>Company</h4><a href="contact.html">Contact</a><a href="contact.html?topic=partner">Become a design partner</a><a href="account.html">Your account</a></div><div class="col"><h4>Trust</h4><a href="security.html">Security</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="contact.html?topic=security">Security review</a></div></div><div class="base"><span>&copy; 2026 Relay &mdash; post-booking integrity for flight &amp; hotel orders.</span><span class="mono">relay-travel.ai</span></div></div></footer></div>
+<script src="config.js"></script>
+<script src="setup.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js"></script>
+<script src="nav.js"></script>
+<script src="plans.js"></script>
+<script>
+(async function () {
+  // Sign-in gate. A subscription attaches to a workspace, and a workspace only
+  // exists behind an account — so this page never renders for a signed-out
+  // visitor. They are sent to login and returned here with the plan intact.
+  var profile = await RelayNav.require({ active: "pricing" });
+  if (!profile) return;
+
+  var toastEl = document.getElementById("toast");
+  var msgEl = document.getElementById("msg");
+  var payBtn = document.getElementById("pay");
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function toast(t) {
+    toastEl.textContent = t; toastEl.classList.add("show");
+    setTimeout(function () { toastEl.classList.remove("show"); }, 2400);
+  }
+  function message(html, kind) {
+    msgEl.innerHTML = html ? '<div class="notice ' + (kind || "") + '">' + html + "</div>" : "";
+  }
+
+  var planId = new URLSearchParams(location.search).get("plan") || "growth";
+  var plan = window.RELAY_PLAN(planId);
+
+  if (!plan || plan.action !== "checkout") {
+    document.getElementById("head").textContent = "That plan isn't purchasable";
+    document.getElementById("sub").textContent =
+      plan ? "The " + plan.name + " plan is free — there's nothing to check out." : "We don't have a plan by that name.";
+    document.getElementById("summary").remove();
+    payBtn.remove();
+    return;
+  }
+
+  document.getElementById("summary").innerHTML =
+    '<div class="row"><span class="k">Plan</span><span class="v"><b>' + esc(plan.name) + "</b></span></div>" +
+    '<div class="row"><span class="k">Price</span><span class="v">' + esc(plan.price_label) + " " + esc(plan.period) + "</span></div>" +
+    '<div class="row"><span class="k">Included</span><span class="v">' +
+      plan.included_orders.toLocaleString() + " reconciliations / month</span></div>" +
+    (plan.overage
+      ? '<div class="row"><span class="k">After that</span><span class="v">$' + plan.overage.toFixed(3).replace(/0$/, "") + " per order</span></div>"
+      : "") +
+    '<div class="row"><span class="k">Billed to</span><span class="v">' + esc(profile.email) + "</span></div>" +
+    '<div class="row"><span class="k">Renews</span><span class="v">Monthly, cancel any time</span></div>';
+
+  payBtn.addEventListener("click", async function () {
+    payBtn.disabled = true;
+    payBtn.textContent = "Contacting Stripe…";
+    message("");
+
+    var cfg = window.RELAY_CONFIG || {};
+    var base = cfg.API_BASE || (String(cfg.SUPABASE_URL || "").replace(/\/+$/, "") + "/functions/v1");
+
+    try {
+      var res = await fetch(base + "/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + profile.session.access_token,
+        },
+        body: JSON.stringify({
+          plan: plan.id,
+          success_url: location.origin + "/account.html?checkout=success",
+          cancel_url: location.href,
+        }),
+      });
+      var body = await res.json().catch(function () { return {}; });
+
+      if (res.ok && body.url) { location.href = body.url; return; }
+
+      // Payments deliberately stay off until real Stripe keys exist. Rather
+      // than showing a card form that goes nowhere, record the intent so the
+      // plan is waiting when billing is switched on.
+      if (res.status === 503 || body.error === "payments_not_enabled") {
+        payBtn.textContent = "Reserve this plan";
+        payBtn.disabled = false;
+        message(
+          "<b>Card payments aren't switched on yet.</b> Relay is pre-revenue and billing goes live with the " +
+          "first paying customer — we're not going to take a card into a form that isn't wired up. " +
+          "Reserve the " + esc(plan.name) + " plan and we'll activate it, at this price, the day billing opens.",
+          ""
+        );
+        payBtn.onclick = async function () {
+          payBtn.disabled = true;
+          var sb = RelayNav.client();
+          var ins = await sb.from("billing_intents").insert({
+            workspace_id: profile.workspace_id,
+            plan: plan.id,
+            note: "Reserved from checkout before billing went live",
+          });
+          if (ins.error) {
+            message("Couldn't record that: " + esc(ins.error.message), "error");
+            payBtn.disabled = false;
+            return;
+          }
+          message("Reserved. The " + esc(plan.name) + " plan is held for your workspace at " +
+                  esc(plan.price_label) + " " + esc(plan.period) + ". Nothing has been charged.", "good");
+          payBtn.textContent = "Reserved";
+          toast("Plan reserved");
+        };
+        return;
+      }
+
+      message("Checkout failed: " + esc(body.message || body.error || res.status), "error");
+    } catch (e) {
+      message("Couldn't reach the payment service. " + esc(String(e.message || e)), "error");
+    }
+    payBtn.disabled = false;
+    payBtn.textContent = "Continue to payment";
+  });
+})();
+</script>
+</body>
+</html>

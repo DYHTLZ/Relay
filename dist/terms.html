@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="relay.css">
+<link rel="stylesheet" href="site.css">
+<title>Terms of Service — Relay</title>
+<meta name="description" content="The terms under which Relay is provided: what we promise, what we don't, and how either side ends it.">
+<link rel="canonical" href="https://relay-travel.ai/terms.html">
+<meta property="og:title" content="Terms of Service — Relay">
+<meta property="og:description" content="The terms under which Relay is provided: what we promise, what we don't, and how either side ends it.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:image" content="https://relay-travel.ai/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:image" content="https://relay-travel.ai/og-image.png">
+</head>
+<body class="page">
+<div id="nav"></div>
+
+<header class="page-head">
+  <div class="wrap narrow">
+    <span class="eyebrow">Terms of Service</span>
+    <h1>Short, and written to be understood.</h1>
+    <p class="lede">These terms govern your use of Relay. By creating an account or calling the API,
+      you agree to them.</p>
+  </div>
+</header>
+
+<section style="padding-top:8px">
+  <div class="wrap narrow prose">
+
+    <div class="notice" style="margin-bottom:26px">
+      <b>This is a template, not legal advice.</b> Relay is an early-stage company and these terms
+      have not been reviewed by a lawyer. If you are signing on behalf of a company with a procurement
+      process, ask us for a proper agreement rather than relying on this page — we would rather
+      negotiate a real contract than have you accept something neither of us has read carefully.
+    </div>
+
+    <h2>1. What Relay does</h2>
+    <p>Relay compares three records of a travel order — what was agreed, what was charged, and what a
+      supplier confirmed — and reports where they disagree. It is a detection and reporting service.</p>
+    <p><b>Relay does not book travel, move money, issue refunds, or cancel reservations.</b> It
+      recommends an action; carrying that action out is yours to do. Nothing Relay outputs is a
+      financial, legal, or travel-advisory recommendation.</p>
+
+    <h2>2. Your account</h2>
+    <p>You are responsible for keeping your API keys secret and for everything done with them. Keys
+      are shown once and stored only as hashes, so we cannot recover one for you — revoke and reissue
+      instead. Tell us promptly if you believe a key has been exposed.</p>
+    <p>One account per person. Do not share sign-in credentials; add teammates to the workspace.</p>
+
+    <h2>3. Your data</h2>
+    <p>You keep ownership of everything you send. You grant us only the permission needed to run the
+      service for you: store it, compare it, and show it back to you. We do not train models on it and
+      we do not sell it. See the <a href="privacy.html">Privacy Policy</a>.</p>
+    <p>You are responsible for having the right to send us the traveller data you send, and for
+      telling travellers about it where the law requires that.</p>
+
+    <h2>4. Acceptable use</h2>
+    <p>Do not use Relay to break the law, to attack the service or anyone else's, to work around rate
+      limits, or to resell access without an agreement with us. Do not send data you have no right to
+      send.</p>
+
+    <h2>5. Availability</h2>
+    <p>We aim to keep Relay running and we will tell you about planned interruptions. <b>Unless a
+      signed agreement says otherwise, there is no uptime guarantee.</b> Free and sandbox usage is
+      provided as-is and may change or pause. Do not build a process that fails unsafely if a Relay
+      call does not return.</p>
+
+    <h2>6. Payment</h2>
+    <p>Paid plans are billed monthly in advance through Stripe. Overage is billed at the per-order
+      rate published on the <a href="pricing.html">pricing page</a> at the time of use. Cancel any
+      time; you keep access to the end of the period you have paid for. We do not give pro-rata
+      refunds for partial months, but if something went wrong, ask — we would rather refund you than
+      argue.</p>
+    <p>We will give at least 30 days' notice by email before changing prices for an existing customer.</p>
+
+    <h2>7. Accuracy, and its limits</h2>
+    <p>Relay's checks are deterministic comparisons of the data you send. It cannot detect a problem in
+      data it never received, and it cannot tell whether the data you sent is true. A "cleared"
+      verdict means the three records you supplied agree with each other — <b>it is not a guarantee
+      that a trip will happen.</b></p>
+
+    <h2>8. Liability</h2>
+    <p>To the maximum extent the law allows, Relay is provided as-is, and our total liability for any
+      claim is limited to what you paid us in the 12 months before it arose. We are not liable for
+      indirect or consequential losses, including lost bookings, lost revenue, or the cost of travel
+      disruption. Nothing here excludes liability that cannot lawfully be excluded.</p>
+
+    <h2>9. Ending it</h2>
+    <p>You may close your account at any time. We may suspend or close an account that breaches these
+      terms, or stop offering the service entirely — in which case we will give reasonable notice and
+      let you export your data first.</p>
+
+    <h2>10. Changes and law</h2>
+    <p>We may update these terms; material changes will be emailed to account holders, not slipped in.
+      Continued use after a change means you accept it. These terms are governed by the laws of the
+      State of Delaware, USA, without regard to conflict-of-law rules.</p>
+
+    <p class="foot-note">Last updated 1 September 2026. Questions:
+      <a href="contact.html">contact us</a>.</p>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+<script src="config.js"></script>
+<script src="setup.js"></script>
+<script src="nav.js"></script>
+<script>RelayNav.mount({ active: null });</script>
+</body>
+</html>

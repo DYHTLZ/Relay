@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="relay.css">
+<link rel="stylesheet" href="site.css">
+<title>Your account — Relay</title>
+<meta name="robots" content="noindex">
+</head>
+<body class="page">
+<div id="nav"><nav class="top"><div class="wrap"><a class="wordmark" href="index.html"><span class="baton"><img src="logo.png" alt=""></span>Relay</a><div class="navlinks"><a href="product.html">Product</a><a href="pricing.html">Pricing</a><a href="docs.html">Docs</a><a href="demo.html">Live demo</a><a href="contact.html">Contact</a></div><div class="nav-right" id="nav-right"><a class="nav-signin" href="login.html">Sign in</a><a class="nav-cta" href="login.html?mode=signup&amp;next=app.html">Start free</a></div><button class="nav-burger" id="nav-burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav-drawer"><span></span><span></span><span></span></button></div><div class="nav-drawer" id="nav-drawer" hidden><a href="product.html">Product</a><a href="pricing.html">Pricing</a><a href="docs.html">Docs</a><a href="demo.html">Live demo</a><a href="contact.html">Contact</a><a class="drawer-cta" href="login.html?mode=signup&amp;next=app.html">Start free sandbox</a><a class="drawer-alt" href="login.html">Sign in</a></div></nav></div>
+<div id="config-warn"></div>
+
+<header class="page-head">
+  <div class="wrap narrow">
+    <span class="eyebrow">Your account</span>
+    <h1 id="greeting">Profile &amp; settings</h1>
+    <p class="lede">Who you are to Relay, which workspace your orders belong to, and what you're on.</p>
+  </div>
+</header>
+
+<section style="padding-top:16px">
+  <div class="wrap narrow">
+    <div id="msg"></div>
+
+    <div class="formcard" style="max-width:none;margin-top:0">
+      <h2>Profile</h2>
+      <p class="sub">The display name is what Relay calls you — in the nav, and on anything you share
+        with teammates. It is not your login.</p>
+      <div class="field">
+        <label class="field-label" for="display_name">Display name</label>
+        <input type="text" id="display_name" placeholder="How should we address you?">
+      </div>
+      <div class="field">
+        <label class="field-label" for="company">Company <span style="font-weight:400;color:var(--ink-faint)">(optional — names your workspace)</span></label>
+        <input type="text" id="company" placeholder="Acme Travel">
+      </div>
+      <button class="btn primary" id="save" type="button">Save changes</button>
+    </div>
+
+    <h2 style="font-size:22px;margin-top:44px">Account</h2>
+    <div class="rows" style="margin-top:16px" id="account-rows"></div>
+
+    <h2 style="font-size:22px;margin-top:44px">Plan</h2>
+    <div class="rows" style="margin-top:16px" id="plan-rows"></div>
+    <div class="ctas">
+      <a class="btn primary" href="pricing.html" id="plan-cta">See plans</a>
+      <a class="btn ghost" href="app.html">Open the console</a>
+    </div>
+
+    <h2 style="font-size:22px;margin-top:44px">Security</h2>
+    <div class="rows" style="margin-top:16px" id="security-rows"></div>
+    <div class="ctas">
+      <button class="btn ghost" id="reset-pw" type="button">Send a password reset email</button>
+      <button class="btn danger" id="signout" type="button">Sign out</button>
+    </div>
+    <p class="foot-note">Need your data exported or deleted? <a href="contact.html?topic=security">Ask us</a> —
+      we do it by hand, within seven days, and confirm in writing.</p>
+  </div>
+</section>
+
+<div class="toast" id="toast"></div>
+<div id="site-footer"><footer><div class="wrap"><div class="cols"><div class="col"><h4>Product</h4><a href="product.html">Overview</a><a href="pricing.html">Pricing</a><a href="demo.html">Live demo</a><a href="app.html">Console</a></div><div class="col"><h4>Developers</h4><a href="docs.html">API reference</a><a href="api-access.html">Request API access</a><a href="docs.html#webhooks">Webhooks</a><a href="docs.html#errors">Errors</a></div><div class="col"><h4>Company</h4><a href="contact.html">Contact</a><a href="contact.html?topic=partner">Become a design partner</a><a href="account.html">Your account</a></div><div class="col"><h4>Trust</h4><a href="security.html">Security</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="contact.html?topic=security">Security review</a></div></div><div class="base"><span>&copy; 2026 Relay &mdash; post-booking integrity for flight &amp; hotel orders.</span><span class="mono">relay-travel.ai</span></div></div></footer></div>
+<script src="config.js"></script>
+<script src="setup.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js"></script>
+<script src="nav.js"></script>
+<script src="plans.js"></script>
+<script>
+(async function () {
+  var profile = await RelayNav.require({ active: null });
+  if (!profile) return;
+
+  var sb = RelayNav.client();
+  var toastEl = document.getElementById("toast");
+  var msgEl = document.getElementById("msg");
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function toast(t) {
+    toastEl.textContent = t; toastEl.classList.add("show");
+    setTimeout(function () { toastEl.classList.remove("show"); }, 2400);
+  }
+  function message(text, kind) {
+    msgEl.innerHTML = text ? '<div class="notice ' + (kind || "") + '">' + text + "</div>" : "";
+  }
+  function row(k, v) {
+    return '<div class="row"><span class="k">' + esc(k) + '</span><span class="v">' + v + "</span></div>";
+  }
+
+  if (new URLSearchParams(location.search).get("checkout") === "success") {
+    message("<b>Payment complete.</b> Your plan is active — it may take a few seconds to show below.", "good");
+  }
+
+  document.getElementById("greeting").textContent = "Hello, " + profile.name;
+
+  var user = profile.session.user;
+  var ws = null;
+  if (profile.workspace_id) {
+    var w = await sb.from("workspaces")
+      .select("id, name, plan, created_at").eq("id", profile.workspace_id).maybeSingle();
+    ws = w.data;
+  }
+
+  document.getElementById("display_name").value = profile.name || "";
+  document.getElementById("company").value = (ws && ws.name) || "";
+
+  // --- account facts ---
+  var providers = (user.app_metadata && user.app_metadata.providers) ||
+                  [user.app_metadata && user.app_metadata.provider].filter(Boolean);
+  var providerLabel = providers.length
+    ? providers.map(function (p) { return p === "email" ? "Email + password" : p[0].toUpperCase() + p.slice(1); }).join(", ")
+    : "Email + password";
+
+  document.getElementById("account-rows").innerHTML =
+    row("Email", esc(user.email || "—")) +
+    row("Signs in with", esc(providerLabel)) +
+    row("Workspace", esc((ws && ws.name) || "—")) +
+    row("Workspace ID", '<code class="mono" style="font-size:12px">' + esc(profile.workspace_id || "—") + "</code>") +
+    row("Member since", new Date(user.created_at).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" }));
+
+  // --- plan ---
+  var planId = (ws && ws.plan) || "sandbox";
+  var plan = window.RELAY_PLAN(planId);
+  var friendly = plan ? plan.name : (planId === "design_partner" ? "Design partner" : planId);
+  var priceLine = plan
+    ? plan.price_label + " " + plan.period
+    : (planId === "design_partner" ? "Free during the pilot" : "—");
+  var quota = plan ? plan.included_orders.toLocaleString() + " reconciliations / month" : "Unmetered during the pilot";
+
+  var intents = await sb.from("billing_intents")
+    .select("plan, created_at").order("created_at", { ascending: false }).limit(1);
+  var reserved = intents.data && intents.data[0];
+
+  document.getElementById("plan-rows").innerHTML =
+    row("Current plan", "<b>" + esc(friendly) + "</b>") +
+    row("Price", esc(priceLine)) +
+    row("Included", esc(quota)) +
+    (reserved
+      ? row("Reserved", esc((window.RELAY_PLAN(reserved.plan) || {}).name || reserved.plan) +
+            " — activates when billing goes live")
+      : "");
+
+  if (reserved) document.getElementById("plan-cta").textContent = "Change plan";
+
+  // --- security ---
+  var keys = await sb.from("api_keys")
+    .select("id, revoked_at", { count: "exact" }).is("revoked_at", null);
+  var activeKeys = (keys.data || []).length;
+
+  document.getElementById("security-rows").innerHTML =
+    row("Active API keys", activeKeys + (activeKeys === 1 ? " key" : " keys") +
+        ' &nbsp;<a href="app.html#keys" style="color:var(--accent)">manage</a>') +
+    row("Last signed in", user.last_sign_in_at
+        ? new Date(user.last_sign_in_at).toLocaleString()
+        : "—") +
+    row("Row Level Security", "On — your orders are readable only by this workspace");
+
+  // --- actions ---
+  document.getElementById("save").addEventListener("click", async function () {
+    var btn = this;
+    btn.disabled = true; btn.textContent = "Saving…";
+    var name = document.getElementById("display_name").value.trim();
+    var company = document.getElementById("company").value.trim();
+
+    var r1 = await sb.from("workspace_members")
+      .update({ display_name: name || null })
+      .eq("user_id", user.id);
+
+    var r2 = { error: null };
+    if (company && profile.workspace_id) {
+      r2 = await sb.from("workspaces").update({ name: company }).eq("id", profile.workspace_id);
+    }
+
+    btn.disabled = false; btn.textContent = "Save changes";
+    if (r1.error || r2.error) {
+      message("Couldn't save: " + esc((r1.error || r2.error).message), "error");
+      return;
+    }
+    message("");
+    toast("Saved");
+    setTimeout(function () { location.reload(); }, 700);
+  });
+
+  document.getElementById("reset-pw").addEventListener("click", async function () {
+    var r = await sb.auth.resetPasswordForEmail(user.email, {
+      redirectTo: location.origin + "/login.html",
+    });
+    if (r.error) { message("Couldn't send it: " + esc(r.error.message), "error"); return; }
+    toast("Reset email sent");
+    message("Check " + esc(user.email) + " for the reset link.", "good");
+  });
+
+  document.getElementById("signout").addEventListener("click", async function () {
+    await sb.auth.signOut();
+    location.href = "index.html";
+  });
+})();
+</script>
+</body>
+</html>

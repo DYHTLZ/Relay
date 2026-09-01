@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="relay.css">
+<link rel="stylesheet" href="site.css">
+<title>Pricing — Relay</title>
+<meta name="description" content="Relay pricing: a free sandbox, then per-order reconciliation pricing that scales with your volume.">
+<link rel="canonical" href="https://relay-travel.ai/pricing.html">
+<meta property="og:title" content="Pricing — Relay">
+<meta property="og:description" content="Relay pricing: a free sandbox, then per-order reconciliation pricing that scales with your volume.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:image" content="https://relay-travel.ai/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:image" content="https://relay-travel.ai/og-image.png">
+</head>
+<body class="page">
+<div id="nav"><nav class="top"><div class="wrap"><a class="wordmark" href="index.html"><span class="baton"><img src="logo.png" alt=""></span>Relay</a><div class="navlinks"><a href="product.html">Product</a><a href="pricing.html" class="here">Pricing</a><a href="docs.html">Docs</a><a href="demo.html">Live demo</a><a href="contact.html">Contact</a></div><div class="nav-right" id="nav-right"><a class="nav-signin" href="login.html">Sign in</a><a class="nav-cta" href="login.html?mode=signup&amp;next=app.html">Start free</a></div><button class="nav-burger" id="nav-burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav-drawer"><span></span><span></span><span></span></button></div><div class="nav-drawer" id="nav-drawer" hidden><a href="product.html">Product</a><a href="pricing.html" class="here">Pricing</a><a href="docs.html">Docs</a><a href="demo.html">Live demo</a><a href="contact.html">Contact</a><a class="drawer-cta" href="login.html?mode=signup&amp;next=app.html">Start free sandbox</a><a class="drawer-alt" href="login.html">Sign in</a></div></nav></div>
+
+<header class="page-head">
+  <div class="wrap">
+    <span class="eyebrow">Pricing</span>
+    <h1>Priced per order, because that's what you're protecting.</h1>
+    <p class="lede">Start free against test data. Move to a paid plan when real travellers' money is
+      flowing through it. One caught failure usually costs more than the month.</p>
+  </div>
+</header>
+
+<section style="padding-top:24px">
+  <div class="wrap">
+    <div class="tiers" id="tiers"></div>
+    <p class="foot-note" id="signed-note" style="max-width:70ch"></p>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="wrap narrow faq">
+    <h2>Questions people actually ask</h2>
+    <details>
+      <summary>What counts as one reconciliation?</summary>
+      <p>One order, judged once. Re-checking the same order after the supplier finally confirms — which the
+        watcher does on its own — does not count again. You are billed for orders, not API calls.</p>
+    </details>
+    <details>
+      <summary>What happens when I go over the included volume?</summary>
+      <p>Nothing breaks. Overage is billed at the per-order rate on the plan. Relay will never stop
+        reconciling mid-month, because the month you exceed your plan is exactly the month you need it working.</p>
+    </details>
+    <details>
+      <summary>Can I stay on Sandbox forever?</summary>
+      <p>Yes. Sandbox keys, test data, all ten rules, no card, no expiry. It becomes limiting the moment you
+        want live keys, webhooks or the watcher.</p>
+    </details>
+    <details>
+      <summary>Do I have to sign in to pay?</summary>
+      <p>Yes — deliberately. A subscription attaches to a workspace, and a workspace only exists once you have
+        an account. Choosing a paid plan while signed out will send you to sign in first and then bring you
+        straight back here.</p>
+    </details>
+    <details>
+      <summary>Is there a discount for design partners?</summary>
+      <p>Design partners are free during the pilot, and we agree pricing afterwards based on what Relay
+        actually caught. If you have real order volume and are willing to look at findings with us,
+        <a href="contact.html?topic=partner">say so here</a>.</p>
+    </details>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="tile" style="padding:36px 32px">
+      <h3 style="font-size:20px;font-family:var(--serif);font-weight:600">Larger volume, or something that doesn't fit?</h3>
+      <p style="margin-top:10px;max-width:60ch">Annual contracts, on-premise deployment, custom detection rules,
+        procurement paperwork and security review — all normal, none of it self-serve.</p>
+      <div class="ctas" style="margin-top:22px">
+        <a class="btn primary" href="contact.html?topic=enterprise">Talk to us</a>
+        <a class="btn ghost" href="docs.html">Read the API docs</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="site-footer"><footer><div class="wrap"><div class="cols"><div class="col"><h4>Product</h4><a href="product.html">Overview</a><a href="pricing.html">Pricing</a><a href="demo.html">Live demo</a><a href="app.html">Console</a></div><div class="col"><h4>Developers</h4><a href="docs.html">API reference</a><a href="api-access.html">Request API access</a><a href="docs.html#webhooks">Webhooks</a><a href="docs.html#errors">Errors</a></div><div class="col"><h4>Company</h4><a href="contact.html">Contact</a><a href="contact.html?topic=partner">Become a design partner</a><a href="account.html">Your account</a></div><div class="col"><h4>Trust</h4><a href="security.html">Security</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="contact.html?topic=security">Security review</a></div></div><div class="base"><span>&copy; 2026 Relay &mdash; post-booking integrity for flight &amp; hotel orders.</span><span class="mono">relay-travel.ai</span></div></div></footer></div>
+<script src="config.js"></script>
+<script src="setup.js"></script>
+<script src="nav.js"></script>
+<script src="plans.js"></script>
+<script>
+(async function () {
+  var profile = await RelayNav.mount({ active: "pricing" });
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  document.getElementById("tiers").innerHTML = window.RELAY_PLANS.map(function (p) {
+    // Signed out, a paid plan sends you to sign in and returns you to checkout.
+    // Paying is never possible without an account — a subscription has to
+    // attach to a workspace, and a workspace only exists behind sign-in.
+    var target = p.action === "signup"
+      ? "login.html?mode=signup&next=" + encodeURIComponent("app.html")
+      : (profile
+          ? "checkout.html?plan=" + p.id
+          : "login.html?next=" + encodeURIComponent("checkout.html?plan=" + p.id));
+
+    return '<div class="tier' + (p.featured ? " featured" : "") + '">' +
+      '<div class="name">' + esc(p.name) + (p.featured ? '<span class="pill">Most chosen</span>' : "") + "</div>" +
+      '<div class="price">' + esc(p.price_label) + " <small>" + esc(p.period) + "</small></div>" +
+      '<p class="blurb">' + esc(p.blurb) + "</p>" +
+      "<ul>" + p.features.map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("") + "</ul>" +
+      '<a class="btn ' + (p.featured ? "primary" : "ghost") + ' block" href="' + target + '">' +
+        esc(p.cta) + "</a>" +
+    "</div>";
+  }).join("");
+
+  document.getElementById("signed-note").textContent = profile
+    ? "Signed in as " + profile.email + ". Choosing a paid plan takes you straight to checkout."
+    : "Paid plans require an account — you'll be asked to sign in, then brought back to finish.";
+})();
+</script>
+</body>
+</html>

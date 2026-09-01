@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "relay": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/server.mjs"],
+      "env": {
+        "RELAY_API_KEY": "${RELAY_API_KEY}",
+        "RELAY_API_BASE": "${RELAY_API_BASE}"
+      }
+    }
+  }
+}

@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="relay.css">
+<link rel="stylesheet" href="site.css">
+<title>Privacy Policy — Relay</title>
+<meta name="description" content="What Relay stores, how long it keeps it, who can see it, and what it is never used for.">
+<link rel="canonical" href="https://relay-travel.ai/privacy.html">
+<meta property="og:title" content="Privacy Policy — Relay">
+<meta property="og:description" content="What Relay stores, how long it keeps it, who can see it, and what it is never used for.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:image" content="https://relay-travel.ai/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:image" content="https://relay-travel.ai/og-image.png">
+</head>
+<body class="page">
+<div id="nav"></div>
+
+<header class="page-head">
+  <div class="wrap narrow">
+    <span class="eyebrow">Privacy</span>
+    <h1>What we store, for how long, and what we never do with it.</h1>
+    <p class="lede">Written to be read, not to be survived. If anything here is unclear,
+      <a href="contact.html?topic=security">ask us</a> and we will fix the wording.</p>
+  </div>
+</header>
+
+<section style="padding-top:8px">
+  <div class="wrap narrow prose">
+
+    <h2>The short version</h2>
+    <ul>
+      <li>We store the order data you send us, because comparing it is the entire product.</li>
+      <li><b>We do not train any model on your data</b>, and we do not sell or share it.</li>
+      <li>We never receive card numbers. Relay handles charge <i>references</i>, not payment credentials.</li>
+      <li>You can ask for an export or a deletion at any time and we will do it by hand within seven days.</li>
+    </ul>
+
+    <h2>Who is who</h2>
+    <p>If you are a Relay customer, you are the <b>controller</b> of the traveller data you send, and
+      Relay is a <b>processor</b> acting on your instructions. If you are a traveller whose booking
+      passed through a Relay customer, your relationship is with them; we will forward any request you
+      send us to the relevant customer.</p>
+
+    <h2>What we collect</h2>
+    <h3>Order data you send to the API</h3>
+    <p>For each order: your own order identifier, and the three views of it — amounts, currencies,
+      routes, departure dates, passenger names, refund and capture status, processor and supplier
+      names, and charge identifiers. Passenger names and travel dates are personal data. We ask for
+      them because a name or date mismatch is one of the failures Relay exists to detect; if you can
+      detect what you need without sending names, send fewer fields — a field you omit is never
+      treated as a mismatch.</p>
+    <h3>Account data</h3>
+    <p>Your email address, an optional display name and company name, and which authentication
+      provider you used. Passwords, when used, are hashed by Supabase Auth and never visible to us.</p>
+    <h3>Operational data</h3>
+    <p>API key hashes, key last-used timestamps, webhook endpoints and their signing secrets, and
+      records of raw provider webhooks when you connect a provider.</p>
+    <h3>Enquiries</h3>
+    <p>If you use the contact or API-access forms, we keep what you typed so we can reply.</p>
+
+    <h2>What we do not collect</h2>
+    <ul>
+      <li><b>No card numbers, CVVs, or bank credentials.</b> Relay sees a charge reference such as
+        <code>ch_1P…</code>, never the instrument behind it.</li>
+      <li><b>No third-party analytics, advertising, or tracking pixels.</b> There is no Google
+        Analytics on this site. We considered it and decided against putting a third-party tracker on
+        a product that handles other people's payment data.</li>
+      <li><b>No cookies for advertising.</b> The only browser storage we use is the session token
+        that keeps you signed in, and a local preference or two in the console.</li>
+    </ul>
+
+    <h2>How long we keep it</h2>
+    <ul>
+      <li><b>Orders</b> — for as long as your account is open, so that history stays queryable. Sandbox
+        data may be cleared periodically.</li>
+      <li><b>Raw provider webhook payloads</b> — kept append-only so a normalisation bug can be
+        replayed rather than losing evidence. These can be purged on request.</li>
+      <li><b>Account data</b> — until you delete the account.</li>
+      <li><b>Enquiries</b> — until they are handled, then as long as is useful for follow-up.</li>
+    </ul>
+    <p>On account deletion, order data is removed by database cascade — deleting the workspace deletes
+      its orders, keys, webhooks and connections with it.</p>
+
+    <h2>Who can see it</h2>
+    <p>Your workspace's data is readable only by members of that workspace, enforced by row-level
+      security in PostgreSQL (see <a href="security.html">Security</a>). No other customer can query
+      it. Relay staff — currently one person — can technically reach the database for support and
+      debugging; we access customer data only when needed to fix something, and we would rather you
+      ask us to look than assume we already have.</p>
+
+    <h2>Subprocessors</h2>
+    <ul>
+      <li><b>Supabase</b> — database, authentication and function hosting (US East).</li>
+      <li><b>Cloudflare</b> — static site hosting and DNS.</li>
+      <li><b>Stripe</b> — subscription billing, if and when you pay us. Stripe handles card details
+        directly; they never pass through Relay.</li>
+    </ul>
+    <p>We will update this list before adding another one.</p>
+
+    <h2>International transfers</h2>
+    <p>Data is processed in the United States. If you are in the EEA or UK and that matters for your
+      compliance position, raise it before sending live data — a different deployment region is a
+      conversation, not a blocker.</p>
+
+    <h2>Your rights</h2>
+    <p>Access, correction, export, deletion, and objection. Email <b>yduan2435@gmail.com</b> or use
+      the <a href="contact.html?topic=security">contact form</a>. We respond within seven days and
+      confirm in writing when it is done. There is no charge and no form to fill in.</p>
+
+    <h2>Changes</h2>
+    <p>If we change anything material, we will email account holders rather than quietly updating the
+      date at the bottom of this page.</p>
+
+    <p class="foot-note">Last updated 1 September 2026. Contact: yduan2435@gmail.com</p>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+<script src="config.js"></script>
+<script src="setup.js"></script>
+<script src="nav.js"></script>
+<script>RelayNav.mount({ active: null });</script>
+</body>
+</html>

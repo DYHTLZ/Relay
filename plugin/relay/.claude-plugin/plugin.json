@@ -1,0 +1,9 @@
+{
+  "name": "relay",
+  "version": "0.1.0",
+  "description": "Post-booking integrity for flight and hotel orders. Reconciles what a traveller agreed to buy, what was actually charged, and what the supplier confirmed — and flags every case where the three disagree.",
+  "author": { "name": "Relay", "url": "https://relay-travel.ai" },
+  "homepage": "https://relay-travel.ai",
+  "license": "MIT",
+  "keywords": ["travel", "reconciliation", "payments", "booking", "integrity", "agents"]
+}

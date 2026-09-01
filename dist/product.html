@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="relay.css">
+<link rel="stylesheet" href="site.css">
+<title>Product — Relay</title>
+<meta name="description" content="Relay reconciles what a customer agreed to buy, what was actually charged, and what the supplier confirmed — flags every mismatch, and issues the refund once you approve it.">
+<link rel="canonical" href="https://relay-travel.ai/product.html">
+<meta property="og:title" content="Product — Relay">
+<meta property="og:description" content="Relay reconciles what a customer agreed to buy, what was actually charged, and what the supplier confirmed — flags every mismatch, and issues the refund once you approve it.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:image" content="https://relay-travel.ai/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:image" content="https://relay-travel.ai/og-image.png">
+</head>
+<body class="page">
+<div id="nav"><nav class="top"><div class="wrap"><a class="wordmark" href="index.html"><span class="baton"><img src="logo.png" alt=""></span>Relay</a><div class="navlinks"><a href="product.html" class="here">Product</a><a href="pricing.html">Pricing</a><a href="docs.html">Docs</a><a href="demo.html">Live demo</a><a href="contact.html">Contact</a></div><div class="nav-right" id="nav-right"><a class="nav-signin" href="login.html">Sign in</a><a class="nav-cta" href="login.html?mode=signup&amp;next=app.html">Start free</a></div><button class="nav-burger" id="nav-burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav-drawer"><span></span><span></span><span></span></button></div><div class="nav-drawer" id="nav-drawer" hidden><a href="product.html" class="here">Product</a><a href="pricing.html">Pricing</a><a href="docs.html">Docs</a><a href="demo.html">Live demo</a><a href="contact.html">Contact</a><a class="drawer-cta" href="login.html?mode=signup&amp;next=app.html">Start free sandbox</a><a class="drawer-alt" href="login.html">Sign in</a></div></nav></div>
+
+<header class="page-head">
+  <div class="wrap">
+    <span class="eyebrow">The product</span>
+    <h1>Three records of the same booking. Relay <em>notices</em> when they stop agreeing — and fixes it.</h1>
+    <p class="lede">A travel order lives in three places at once: the agreement your customer accepted,
+      the charge your processor captured, and the reservation the supplier actually issued. Nothing in the
+      stack compares them. Relay does — on every order, continuously, and it says something the moment they diverge.</p>
+    <div class="ctas">
+      <a class="btn primary lg" href="login.html?mode=signup&amp;next=app.html">Start free sandbox</a>
+      <a class="btn ghost lg" href="demo.html">Try the live demo</a>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>Why this breaks, and why nobody catches it</h2>
+    <div class="grid2">
+      <div class="prose">
+        <p>Booking a flight is not one transaction. It is a payment authorisation, a fare quote that expires,
+          a supplier request that can partially succeed, a ticketing step that happens seconds or minutes later,
+          and a confirmation that may never arrive. Each step has its own system of record and its own idea of
+          what went right.</p>
+        <p>When an AI agent books on a traveller's behalf, the gap widens. The agent commits to something in
+          natural language, the processor captures a number, and the GDS returns a status code. No human ever
+          sits between them and asks whether the three describe the same trip.</p>
+        <p>The failures are not exotic. They are mundane, frequent, and expensive: money taken for a ticket
+          that never issued, a duplicate capture from a retried request, a fare that drifted between quote and
+          charge, a refund that was initiated and then quietly never landed.</p>
+      </div>
+      <div>
+        <div class="rows">
+          <div class="row"><span class="k">Agreed</span><span class="v mono">SFO → NRT · $2,480 · refundable</span></div>
+          <div class="row"><span class="k">Charged</span><span class="v mono">$2,480 · captured ×2</span></div>
+          <div class="row"><span class="k">Confirmed</span><span class="v mono">status: failed</span></div>
+        </div>
+        <p class="foot-note">Two flags on one order: <code>duplicate_charge</code> and
+          <code>unissued_after_charge</code>. Severity: critical. Recommended resolution: void the second
+          capture, refund in full, re-attempt issuance. This is the output, not a dashboard you have to read.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<section>
+  <div class="wrap">
+    <span class="eyebrow">How it works</span>
+    <h2>One call per order. Ten checks. A verdict you can act on.</h2>
+    <div class="grid3">
+      <div class="tile">
+        <span class="tag">01 — Submit</span>
+        <h3>Send the three views</h3>
+        <p>POST the order to <code>/v1/reconcile</code> with whatever you have: what was agreed, what was
+          charged, what the supplier confirmed. Missing fields are never treated as mismatches — Relay only
+          judges what you actually gave it.</p>
+      </div>
+      <div class="tile">
+        <span class="tag">02 — Reconcile</span>
+        <h3>Ten deterministic rules</h3>
+        <p>No model, no probability score. Amounts, currencies, routes, dates, passenger names, capture counts
+          and fare rules are compared directly. A flag is a fact you can show a customer, not a guess.</p>
+      </div>
+      <div class="tile">
+        <span class="tag">03 — Watch</span>
+        <h3>Time is a failure mode</h3>
+        <p>The worst outcomes are silences: nothing ever confirms. Relay holds an order open with a deadline —
+          20 minutes for ticketing, 5 days for a refund — and flags it when the deadline passes with no news.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="wrap">
+    <h2>What it detects</h2>
+    <p class="lede" style="margin-top:12px">Every flag carries a severity and a recommended resolution.</p>
+    <div class="rows" style="margin-top:28px">
+      <div class="row"><span class="k mono">unissued_after_charge</span><span class="v">Money taken, supplier order failed</span></div>
+      <div class="row"><span class="k mono">duplicate_charge</span><span class="v">More than one capture for one order</span></div>
+      <div class="row"><span class="k mono">partial_order</span><span class="v">Only part of the itinerary confirmed</span></div>
+      <div class="row"><span class="k mono">price_drift</span><span class="v">Charged amount ≠ agreed amount</span></div>
+      <div class="row"><span class="k mono">currency_mismatch</span><span class="v">Charged in a different currency than quoted</span></div>
+      <div class="row"><span class="k mono">refund_not_landed</span><span class="v">Refund initiated over 5 days ago, never settled</span></div>
+      <div class="row"><span class="k mono">date_mismatch</span><span class="v">Confirmed departure date ≠ agreed</span></div>
+      <div class="row"><span class="k mono">route_mismatch</span><span class="v">Confirmed route ≠ agreed</span></div>
+      <div class="row"><span class="k mono">passenger_mismatch</span><span class="v">Confirmed passenger name ≠ agreed</span></div>
+      <div class="row"><span class="k mono">fare_rule_drift</span><span class="v">Sold refundable, confirmed non-refundable</span></div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<section>
+  <div class="wrap">
+    <span class="eyebrow">And what it fixes</span>
+    <h2>Five of the ten it can resolve for you.</h2>
+    <p class="lede" style="margin-top:12px">Relay works out the fix and the amount from the order
+      itself, then waits for your approval.</p>
+
+    <div class="rows" style="margin-top:28px">
+      <div class="row"><span class="k mono">unissued_after_charge</span><span class="v">Refund the charge in full</span></div>
+      <div class="row"><span class="k mono">duplicate_charge</span><span class="v">Refund only the surplus captures</span></div>
+      <div class="row"><span class="k mono">price_drift</span><span class="v">Refund the difference</span></div>
+      <div class="row"><span class="k mono">partial_order</span><span class="v">Cancel the supplier order</span></div>
+      <div class="row"><span class="k mono">passenger_mismatch</span><span class="v">Request a name correction</span></div>
+    </div>
+
+    <div class="grid3" style="margin-top:36px">
+      <div class="tile">
+        <span class="tag">Approve first</span>
+        <h3>Nothing moves on its own</h3>
+        <p>Remediation is off until you enable it, and a plan cannot execute until it is approved.
+          Both are enforced by Postgres constraints, not by application code. You can raise a per-flag
+          ceiling to let small, well-understood fixes run automatically.</p>
+      </div>
+      <div class="tile">
+        <span class="tag">Exactly once</span>
+        <h3>No double refunds</h3>
+        <p>Each plan carries a key derived from the order, the flag and the action — reused all the
+          way through to Stripe. Proposing twice returns the same plan; a retry after a timeout
+          returns the original refund rather than making a second one.</p>
+      </div>
+      <div class="tile">
+        <span class="tag">Auditable</span>
+        <h3>Who decided what</h3>
+        <p>Every transition is written to an append-only log that nobody can edit or delete — who
+          approved, when it ran, what the provider returned. If money moved, the record says why.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<section>
+  <div class="wrap">
+    <h2>Who it's for</h2>
+    <div class="grid3">
+      <div class="tile">
+        <h3>AI travel agents</h3>
+        <p>You book on a user's behalf and you carry the blame when it goes wrong. Relay is the check that
+          runs before your user finds out.</p>
+      </div>
+      <div class="tile">
+        <h3>OTAs and TMCs</h3>
+        <p>Your ops team already reconciles by hand at month end, from spreadsheets. This is that job, done
+          per-order and in real time.</p>
+      </div>
+      <div class="tile">
+        <h3>Fintechs in travel</h3>
+        <p>You move the money and see only your side of it. Relay matches your settlements against what the
+          supplier actually delivered.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="wrap">
+    <h2>What Relay is not</h2>
+    <div class="prose" style="max-width:70ch">
+      <p><b>It does not book anything.</b> Relay never touches your supplier connections or your inventory.
+        It reads three records and compares them.</p>
+      <p><b>It does not move money without your approval.</b> Relay proposes the exact fix and the
+        exact amount; nothing executes until a person says yes. Remediation is off entirely until you
+        switch it on, and that rule is a database constraint rather than a setting in the code — a
+        redeployed function with a bug in it still cannot refund something nobody approved.</p>
+      <p><b>It does not decide what a broken trip is worth.</b> Five of the ten flags have no
+        automatic action, because the safe move depends on whether the traveller still wants the trip.
+        Relay escalates those to a person instead of guessing, and reports coverage as resolved
+        outcomes rather than proposed plans so the gap stays visible.</p>
+      <p><b>It does not guess.</b> Every flag is a deterministic comparison you can reproduce by hand. False
+        positives are the fastest way to lose trust in a monitoring tool, so about half our test suite asserts
+        that Relay stays <i>quiet</i>.</p>
+    </div>
+    <div class="ctas">
+      <a class="btn primary lg" href="pricing.html">See pricing</a>
+      <a class="btn ghost lg" href="contact.html?topic=partner">Talk to us about a pilot</a>
+    </div>
+  </div>
+</section>
+
+<div id="site-footer"><footer><div class="wrap"><div class="cols"><div class="col"><h4>Product</h4><a href="product.html">Overview</a><a href="pricing.html">Pricing</a><a href="demo.html">Live demo</a><a href="app.html">Console</a></div><div class="col"><h4>Developers</h4><a href="docs.html">API reference</a><a href="api-access.html">Request API access</a><a href="docs.html#webhooks">Webhooks</a><a href="docs.html#errors">Errors</a></div><div class="col"><h4>Company</h4><a href="contact.html">Contact</a><a href="contact.html?topic=partner">Become a design partner</a><a href="account.html">Your account</a></div><div class="col"><h4>Trust</h4><a href="security.html">Security</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="contact.html?topic=security">Security review</a></div></div><div class="base"><span>&copy; 2026 Relay &mdash; post-booking integrity for flight &amp; hotel orders.</span><span class="mono">relay-travel.ai</span></div></div></footer></div>
+<script src="config.js"></script>
+<script src="setup.js"></script>
+<script src="nav.js"></script>
+<script>RelayNav.mount({ active: "product" });</script>
+</body>
+</html>

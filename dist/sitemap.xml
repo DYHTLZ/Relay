@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- URLs match the canonical tag on each page exactly. The site is served as
+     static .html files, so extensionless URLs would 404 unless the host is
+     configured to rewrite them — the two must agree, and .html is what works. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://relay-travel.ai/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://relay-travel.ai/product.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://relay-travel.ai/pricing.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://relay-travel.ai/docs.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://relay-travel.ai/api-access.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://relay-travel.ai/demo.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://relay-travel.ai/security.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://relay-travel.ai/privacy.html</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://relay-travel.ai/terms.html</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://relay-travel.ai/contact.html</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+</urlset>

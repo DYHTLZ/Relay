@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relay API Reference</title>
+<meta name="description" content="Relay API reference — reconcile travel orders, receive webhooks, and understand every flag Relay can raise.">
+<link rel="canonical" href="https://relay-travel.ai/docs.html">
+<meta property="og:title" content="Relay API Reference">
+<meta property="og:description" content="Relay API reference — reconcile travel orders, receive webhooks, and understand every flag Relay can raise.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:image" content="https://relay-travel.ai/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:image" content="https://relay-travel.ai/og-image.png">
+<meta name="theme-color" content="#f7f6f3">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="relay.css">
+<style>
+  .shell { display: grid; grid-template-columns: 232px minmax(0,1fr); min-height: 100vh; }
+
+  .sidebar {
+    border-right: 1px solid var(--line); background: var(--surface);
+    padding: 24px 16px; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  }
+  .sidebar .brand { padding: 0 8px 16px; border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+  .sidebar nav { display: flex; flex-direction: column; gap: 1px; }
+  .sidebar nav a {
+    font-size: 13.5px; color: var(--ink-soft); text-decoration: none;
+    padding: 7px 10px; border-radius: 7px;
+  }
+  .sidebar nav a:hover { background: var(--surface-sunk); color: var(--ink); }
+  .sidebar .group {
+    font-family: var(--mono); font-size: 10px; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--ink-faint); padding: 16px 10px 6px;
+  }
+  .sidebar .back { margin-top: 20px; padding: 12px 10px 0; border-top: 1px solid var(--line); font-size: 12.5px; }
+  .sidebar .back a { color: var(--ink-soft); display: block; padding: 5px 0; text-decoration: none; }
+  .sidebar .back a:hover { color: var(--ink); }
+
+  main { padding: 48px 56px 100px; max-width: 860px; }
+  h1 { font-family: var(--serif); font-size: 32px; margin: 0 0 8px; font-weight: 600; }
+  .lede { color: var(--ink-soft); font-size: 16px; margin: 0 0 12px; max-width: 62ch; }
+  h2 {
+    font-family: var(--serif); font-size: 21px; font-weight: 600; margin: 52px 0 12px;
+    padding-top: 22px; border-top: 1px solid var(--line); scroll-margin-top: 20px;
+  }
+  h3 { font-size: 15px; font-weight: 700; margin: 28px 0 8px; }
+  p { margin: 0 0 14px; max-width: 66ch; }
+  ul { margin: 0 0 16px; padding-left: 20px; } li { margin-bottom: 6px; }
+
+  code {
+    font-family: var(--mono); font-size: .87em; background: var(--surface-sunk);
+    border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px;
+  }
+  pre {
+    background: var(--code-bg); color: var(--code-fg); border: 1px solid var(--code-line);
+    border-radius: 10px; padding: 16px 18px;
+    overflow-x: auto; margin: 0 0 18px; font-family: var(--mono); font-size: 12.7px; line-height: 1.65;
+  }
+  pre code { background: none; border: none; padding: 0; color: inherit; font-size: inherit; }
+
+  .endpoint {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+    font-family: var(--mono); font-size: 13.5px; background: var(--surface);
+    border: 1px solid var(--line-strong); border-radius: 9px; padding: 11px 14px; overflow-x: auto;
+  }
+  .method {
+    background: var(--accent); color: var(--on-accent); border-radius: 5px;
+    padding: 2px 8px; font-size: 11.5px; font-weight: 600; letter-spacing: .04em; flex: none;
+  }
+
+  .table-scroll { overflow-x: auto; margin-bottom: 18px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.2px;
+          background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+  th { text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em;
+       color: var(--ink-soft); font-weight: 600; padding: 10px 14px;
+       border-bottom: 1px solid var(--line); background: var(--surface-sunk); white-space: nowrap; }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td code { white-space: nowrap; }
+  .req { font-family: var(--mono); font-size: 10.5px; color: var(--accent); }
+
+  .callout {
+    border: 1px dashed var(--line-strong); border-radius: 10px; padding: 14px 17px;
+    background: var(--surface); color: var(--ink-soft); font-size: 13.5px; margin-bottom: 18px;
+  }
+  .callout b { color: var(--ink); }
+
+  @media (max-width: 860px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--line); }
+    main { padding: 28px 20px 64px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="mark"><img src="logo.png" alt=""></span>Relay</a>
+    <nav>
+      <div class="group">Start</div>
+      <a href="#overview">Overview</a>
+      <a href="#auth">Authentication</a>
+      <a href="#quickstart">Quickstart</a>
+      <div class="group">Reference</div>
+      <a href="#reconcile">POST /v1/reconcile</a>
+      <a href="#orders">GET /v1/orders</a>
+      <a href="#lifecycle">Order lifecycle</a>
+      <a href="#flags">Flag reference</a>
+      <div class="group">Fixing</div>
+      <a href="#remediation">How fixing works</a>
+      <a href="#propose">POST /v1/remediate/propose</a>
+      <a href="#approve">POST /v1/remediate/approve</a>
+      <a href="#coverage">GET /v1/remediate/coverage</a>
+      <div class="group">Reference</div>
+      <a href="#webhooks">Webhooks</a>
+      <a href="#errors">Errors</a>
+      <div class="group">Notes</div>
+      <a href="#idempotency">Idempotency</a>
+      <a href="#privacy">What we store</a>
+    </nav>
+    <div class="back"><a href="index.html">&larr; relay-travel.ai</a><a href="product.html">Product</a><a href="pricing.html">Pricing</a><a href="login.html?mode=signup&amp;next=app.html">Start free sandbox</a><a href="login.html" id="docs-auth">Sign in</a></div>
+  </aside>
+
+  <main>
+    <h1>API reference</h1>
+    <p class="lede">Relay checks that every travel order actually delivered what was paid for. You send three views of an order; Relay tells you whether they agree, and chases the ones that haven't resolved yet.</p>
+
+    <h2 id="overview">Overview</h2>
+    <p>One endpoint does the work. Call it after checkout with what you know, and call it again whenever you learn more — a ticket issuing, a refund settling. Relay merges what you send, judges it, and stores the result.</p>
+    <p>The part that isn't obvious: <b>Relay holds orders open.</b> A ticket that hasn't issued yet isn't a failure, it's a ticket that hasn't issued <em>yet</em>. So an order that's charged but unconfirmed comes back as <code>state: "open"</code> with a deadline. If nothing arrives before that deadline, Relay flags it on its own — without you having to notice.</p>
+    <div class="callout"><b>That's the whole value.</b> If you have to tell us an order failed, you already knew. What Relay catches is the ones nobody reported.</div>
+
+    <h2 id="auth">Authentication</h2>
+    <p>Every request carries an API key as a bearer token. Create one in the console under <b>API Keys</b>.</p>
+    <pre><code>Authorization: Bearer sk_test_a1b2c3...</code></pre>
+    <p>Sandbox keys (<code>sk_test_</code>) run against test data and never touch live orders. Live keys are issued once we've reviewed real data with you.</p>
+    <div class="callout"><b>Keys are shown once.</b> We store only a SHA-256 hash, so we can't recover a key for you — and neither can anyone who gets into our database. Lost a key? Revoke it and make a new one.</div>
+
+    <h2 id="quickstart">Quickstart</h2>
+    <p>The smallest useful call — a charge that went through while the supplier failed:</p>
+    <pre><code>curl -X POST https://YOUR-PROJECT.supabase.co/functions/v1/reconcile \
+  -H "Authorization: Bearer sk_test_YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "order_id": "ord_9F2k",
+    "agreed":    { "amount": 2480, "currency": "USD" },
+    "charged":   { "amount": 2480, "currency": "USD", "capture_count": 1 },
+    "confirmed": { "supplier": "duffel", "status": "failed" }
+  }'</code></pre>
+    <pre><code>{
+  "order_id": "ord_9F2k",
+  "verdict": "flagged",
+  "flags": [
+    { "code": "unissued_after_charge", "severity": "critical",
+      "detail": "Charged 2480 but supplier order status is \"failed\"." }
+  ],
+  "resolution": "Reverse the charge — money was taken and no product was delivered.",
+  "severity": "critical",
+  "state": "settled",
+  "reconciled_at": "2026-08-31T18:40:12.284Z"
+}</code></pre>
+
+    <h2 id="reconcile">POST /v1/reconcile</h2>
+    <div class="endpoint"><span class="method">POST</span> https://YOUR-PROJECT.supabase.co/functions/v1/reconcile</div>
+
+    <h3>Body</h3>
+    <div class="table-scroll"><table>
+      <thead><tr><th>Field</th><th>Type</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>order_id</code> <span class="req">required</span></td><td>string</td><td>Your identifier. Re-sending the same one updates that order rather than creating a second.</td></tr>
+        <tr><td><code>agreed</code> <span class="req">required</span></td><td>object</td><td>What the customer agreed to buy.</td></tr>
+        <tr><td><code>charged</code> <span class="req">required</span></td><td>object</td><td>What your processor actually charged.</td></tr>
+        <tr><td><code>confirmed</code></td><td>object</td><td>What the supplier confirmed. <b>Omit it entirely when the supplier has not responded yet</b> — Relay stores the order, infers no mismatch from the silence, and holds it open against the ticketing deadline rather than rejecting the call.</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>Fields inside the three objects</h3>
+    <p>All optional. Send what you have — <b>a field you omit is never treated as a mismatch.</b> The more you send, the more Relay can check.</p>
+    <div class="table-scroll"><table>
+      <thead><tr><th>Field</th><th>Where</th><th>Enables</th></tr></thead>
+      <tbody>
+        <tr><td><code>amount</code></td><td>agreed, charged</td><td>price drift detection</td></tr>
+        <tr><td><code>currency</code></td><td>agreed, charged</td><td>currency switch detection</td></tr>
+        <tr><td><code>capture_count</code></td><td>charged</td><td>duplicate charge detection</td></tr>
+        <tr><td><code>status</code></td><td>confirmed</td><td>ticketing failure, partial orders, and whether to hold the order open</td></tr>
+        <tr><td><code>route</code></td><td>agreed, confirmed</td><td>wrong-route detection</td></tr>
+        <tr><td><code>depart_date</code></td><td>agreed, confirmed</td><td>wrong-date detection</td></tr>
+        <tr><td><code>passenger</code></td><td>agreed, confirmed</td><td>name mismatch (case and spacing are normalised first)</td></tr>
+        <tr><td><code>refundable</code></td><td>agreed, confirmed</td><td>fare-rule drift</td></tr>
+        <tr><td><code>refund_initiated_at</code></td><td>charged</td><td>starts the refund-settlement watch</td></tr>
+        <tr><td><code>refund_settled_at</code></td><td>charged</td><td>ends it</td></tr>
+        <tr><td><code>charge_id</code>, <code>processor</code>, <code>supplier</code></td><td>—</td><td>stored for your reference</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>Response</h3>
+    <div class="table-scroll"><table>
+      <thead><tr><th>Field</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>verdict</code></td><td><code>cleared</code> or <code>flagged</code>.</td></tr>
+        <tr><td><code>flags</code></td><td>Array of <code>{ code, severity, detail }</code>. Empty when cleared.</td></tr>
+        <tr><td><code>severity</code></td><td><code>critical</code>, <code>warning</code>, or null.</td></tr>
+        <tr><td><code>resolution</code></td><td>Plain-language recommendation for the worst flag present.</td></tr>
+        <tr><td><code>state</code></td><td><code>open</code> = still waiting on an outcome. <code>settled</code> = finished.</td></tr>
+        <tr><td><code>awaiting</code></td><td>What we're waiting for: <code>ticketing</code>, <code>partial</code>, or <code>refund</code>.</td></tr>
+        <tr><td><code>expected_by</code></td><td>When we'll flag it if nothing arrives.</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2 id="lifecycle">Order lifecycle</h2>
+    <pre><code>1. Checkout           POST /v1/reconcile   confirmed.status = "pending"
+                      → { state: "open", awaiting: "ticketing",
+                          expected_by: "…20 minutes from now" }
+
+2a. Ticket issues     POST /v1/reconcile   confirmed.status = "issued"
+                      → { state: "settled", verdict: "cleared" }
+                      Done. Nothing was wrong.
+
+2b. Nothing arrives   (you do nothing)
+                      → deadline passes, Relay flags it itself
+                      → webhook fires with unissued_after_charge</code></pre>
+    <p>Default waits: <b>20 minutes</b> for ticketing, <b>30 minutes</b> for a partial itinerary, <b>5 days</b> for a refund to settle. These are tunable per account once we've measured how long your suppliers actually take.</p>
+
+    <h2 id="flags">Flag reference</h2>
+    <div class="table-scroll"><table>
+      <thead><tr><th>Code</th><th>Severity</th><th>Raised when</th></tr></thead>
+      <tbody>
+        <tr><td><code>unissued_after_charge</code></td><td>critical</td><td>Money was taken and the supplier order failed — or never confirmed before the deadline.</td></tr>
+        <tr><td><code>duplicate_charge</code></td><td>critical</td><td><code>capture_count</code> &gt; 1. Usually a retry after a timeout.</td></tr>
+        <tr><td><code>partial_order</code></td><td>critical</td><td>Supplier confirmed only part of the itinerary.</td></tr>
+        <tr><td><code>price_drift</code></td><td>critical</td><td>Charged amount differs from agreed by more than 0.01.</td></tr>
+        <tr><td><code>currency_mismatch</code></td><td>critical</td><td>Charged in a different currency than quoted.</td></tr>
+        <tr><td><code>refund_not_landed</code></td><td>critical</td><td>Refund initiated more than 5 days ago and never settled.</td></tr>
+        <tr><td><code>date_mismatch</code></td><td>critical</td><td>Confirmed departure date differs from what was sold.</td></tr>
+        <tr><td><code>route_mismatch</code></td><td>critical</td><td>Confirmed route differs from what was sold.</td></tr>
+        <tr><td><code>passenger_mismatch</code></td><td>warning</td><td>Confirmed passenger name differs (after normalising case and spacing).</td></tr>
+        <tr><td><code>fare_rule_drift</code></td><td>warning</td><td>Sold refundable, confirmed non-refundable.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout"><b>Think a flag is wrong?</b> Mark it as a false alarm in the console. That's not a courtesy — it's how the thresholds get tuned, and it's what lets us show a real precision figure instead of a claim.</div>
+
+    <h2 id="orders">GET /v1/orders</h2>
+    <div class="endpoint"><span class="method">GET</span> https://YOUR-PROJECT.supabase.co/functions/v1/orders</div>
+    <p>Read back what Relay is tracking. Authenticated with the same Relay API key as
+      <code>/v1/reconcile</code> — a server-side integration has a key and no browser session, so this
+      is how it asks &ldquo;what is broken right now&rdquo; without a human logging in.</p>
+    <p>Scoped to the key's own workspace <b>and its own mode</b>: a <code>sk_test_</code> key can never
+      see live orders.</p>
+
+    <h3>Query parameters</h3>
+    <div class="table-scroll"><table>
+      <thead><tr><th>Parameter</th><th>Values</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>verdict</code></td><td><code>flagged</code> · <code>cleared</code></td><td>What is broken, or what passed.</td></tr>
+        <tr><td><code>state</code></td><td><code>open</code> · <code>settled</code></td><td><code>open</code> means Relay is still waiting on someone.</td></tr>
+        <tr><td><code>flag</code></td><td>a flag code</td><td>Only orders carrying that specific failure.</td></tr>
+        <tr><td><code>limit</code></td><td>1–100</td><td>Default 20.</td></tr>
+      </tbody>
+    </table></div>
+
+    <pre><code>curl "https://YOUR-PROJECT.supabase.co/functions/v1/orders?verdict=flagged&amp;limit=5" \
+  -H "Authorization: Bearer sk_test_..."</code></pre>
+
+    <p>A single order by your own identifier:</p>
+    <pre><code>GET /v1/orders/ord_9F2k
+→ { "order": { "external_id": "ord_9F2k", "verdict": "flagged",
+               "flags": ["unissued_after_charge"], "state": "settled", ... } }</code></pre>
+    <p>404 <code>not_found</code> if Relay has never seen that order.</p>
+
+    <hr class="rule" style="margin:44px 0">
+
+    <h2 id="remediation">Fixing, not just reporting</h2>
+    <p>Relay can carry out the fix as well as name it: refund a duplicate capture, refund in full when
+      a ticket never issued, refund the difference on price drift, cancel a partially-confirmed
+      supplier order.</p>
+
+    <div class="callout">
+      <b>Off by default, and approve-first.</b> Remediation is disabled per workspace until you turn it
+      on, and even then a plan does not execute until it is approved. Both rules are enforced by
+      database constraints, not by the function — a redeployed function with a bug in it still cannot
+      move money that nobody approved.
+    </div>
+
+    <h3>The two steps</h3>
+    <p><b>Propose</b> works out what the fix would be and executes nothing. <b>Approve</b> runs it.
+      They are separate on purpose: the amount is computed by Relay from the stored order and never
+      from the request body, so a caller asking to &ldquo;remediate order X&rdquo; cannot influence how
+      much money moves.</p>
+
+    <h3>What each flag maps to</h3>
+    <div class="table-scroll"><table>
+      <thead><tr><th>Flag</th><th>Action</th><th>Amount</th></tr></thead>
+      <tbody>
+        <tr><td><code>unissued_after_charge</code></td><td><code>stripe.refund_full</code></td><td>The whole charge</td></tr>
+        <tr><td><code>duplicate_charge</code></td><td><code>stripe.refund_duplicate</code></td><td>Only the surplus captures</td></tr>
+        <tr><td><code>price_drift</code></td><td><code>stripe.refund_difference</code></td><td>charged &minus; agreed</td></tr>
+        <tr><td><code>partial_order</code></td><td><code>duffel.cancel_order</code></td><td>—</td></tr>
+        <tr><td><code>passenger_mismatch</code></td><td><code>duffel.request_correction</code></td><td>—</td></tr>
+        <tr><td colspan="3" style="color:var(--ink-soft)"><code>currency_mismatch</code>, <code>date_mismatch</code>,
+          <code>route_mismatch</code>, <code>refund_not_landed</code> and <code>fare_rule_drift</code> have
+          <b>no automatic action</b>. The safe move depends on facts Relay does not have — whether the
+          traveller still wants the trip, whether the fare can be reissued. Those are escalated to a
+          person rather than guessed at.</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2 id="propose">POST /v1/remediate/propose</h2>
+    <div class="endpoint"><span class="method">POST</span> https://YOUR-PROJECT.supabase.co/functions/v1/remediate/propose</div>
+    <p>Returns one plan per flag on the order. <b>Nothing is executed.</b></p>
+    <pre><code>curl -X POST .../v1/remediate/propose \
+  -H "Authorization: Bearer sk_test_..." \
+  -H "Content-Type: application/json" \
+  -d '{"order_id": "ord_9F2k"}'
+
+→ {
+  "order_id": "ord_9F2k",
+  "remediation_enabled": true,
+  "plans": [{
+    "id": "9c1f…",
+    "flag_code": "duplicate_charge",
+    "action": "stripe.refund_duplicate",
+    "amount": 2480.00,
+    "currency": "USD",
+    "rationale": "2 captures recorded for one order. Refund the 1 surplus capture(s).",
+    "status": "proposed"
+  }],
+  "message": "Proposed. Nothing has been executed — approve a plan to act on it."
+}</code></pre>
+    <p>Proposing twice returns the <i>same</i> plan rather than creating a second one. The idempotency
+      key is derived from the workspace, order, flag and action, so &ldquo;refund this duplicate&rdquo;
+      can never become two refunds however many times it is asked for.</p>
+
+    <h2 id="approve">POST /v1/remediate/approve</h2>
+    <div class="endpoint"><span class="method">POST</span> https://YOUR-PROJECT.supabase.co/functions/v1/remediate/approve</div>
+    <p>Approves a plan and runs it. <code>/reject</code> declines one with a reason;
+      <code>/execute</code> re-runs a plan that failed.</p>
+    <pre><code>curl -X POST .../v1/remediate/approve \
+  -H "Authorization: Bearer sk_test_..." \
+  -H "Content-Type: application/json" \
+  -d '{"plan_id": "9c1f…"}'
+
+→ { "plan": { "status": "succeeded", "provider": "stripe",
+              "provider_ref": "re_3P…", "attempts": 1 },
+    "executed": true }</code></pre>
+    <p>The same idempotency key is sent to Stripe, so if this call times out after the refund has
+      already been issued, the retry returns the original refund instead of making a second one.</p>
+    <p>A <code>409 refused_by_database</code> means one of two things, and the response says which:
+      the workspace kill switch is off, or the plan is not approved. Do not retry — fix the cause.</p>
+
+    <h2 id="coverage">GET /v1/remediate/coverage</h2>
+    <div class="endpoint"><span class="method">GET</span> https://YOUR-PROJECT.supabase.co/functions/v1/remediate/coverage</div>
+    <p>How much of what Relay detects it actually resolves, per flag.</p>
+    <pre><code>→ {
+  "by_flag": [
+    { "flag_code": "duplicate_charge", "action": "stripe.refund_duplicate",
+      "detected": 8, "planned": 8, "resolved": 7, "pending": 1,
+      "automatable": true, "coverage_pct": 87.5 },
+    { "flag_code": "date_mismatch", "action": "escalate.notify",
+      "detected": 8, "resolved": 0, "automatable": false, "coverage_pct": 0.0 }
+  ],
+  "totals": { "detected": 80, "resolved": 41, "coverage_pct": 51.3 }
+}</code></pre>
+    <div class="callout">
+      <b>Coverage counts resolved outcomes, not proposed plans.</b> A plan nobody executed has fixed
+      nothing. Flags with <code>automatable: false</code> sit at zero by design, and that is the honest
+      number rather than one inflated by counting intentions.
+    </div>
+
+    <hr class="rule" style="margin:44px 0">
+
+    <h2 id="webhooks">Webhooks</h2>
+    <p>Set an endpoint in the console and Relay posts each verdict to it, so you can act on a flag without polling. This is also the only way you hear about orders flagged by timeout, since nothing prompted them.</p>
+    <pre><code>POST your-endpoint
+X-Relay-Signature: 3f9a2b…
+
+{
+  "event": "order.flagged",
+  "order_id": "ord_9F2k",
+  "verdict": "flagged",
+  "flags": [{ "code": "unissued_after_charge", "severity": "critical",
+              "detail": "No confirmation received 23 minutes past the expected deadline." }],
+  "resolution": "Reverse the charge — money was taken and no product was delivered.",
+  "severity": "critical",
+  "detected_by": "timeout"
+}</code></pre>
+
+    <h3>Verify the signature</h3>
+    <p>Always. An unverified webhook endpoint accepts anything anyone posts to it.</p>
+    <pre><code>import { createHash } from "node:crypto";
+
+app.post("/webhooks/relay", express.raw({ type: "application/json" }), (req, res) =&gt; {
+  const expected = createHash("sha256")
+    .update(process.env.RELAY_WEBHOOK_SECRET + req.body.toString())
+    .digest("hex");
+
+  if (req.get("X-Relay-Signature") !== expected) return res.sendStatus(401);
+
+  const event = JSON.parse(req.body.toString());
+  // handle event.flags …
+  res.sendStatus(200);
+});</code></pre>
+    <p>Use the <em>raw</em> request body, not a re-serialised object — re-encoding changes the bytes and the signature won't match. Your signing secret is in the console under Webhooks.</p>
+
+    <h2 id="errors">Errors</h2>
+    <div class="table-scroll"><table>
+      <thead><tr><th>Status</th><th>Code</th><th>What to do</th></tr></thead>
+      <tbody>
+        <tr><td>400</td><td><code>invalid_request</code></td><td>A required field is missing. The response lists which.</td></tr>
+        <tr><td>400</td><td><code>invalid_json</code></td><td>Body wasn't valid JSON.</td></tr>
+        <tr><td>401</td><td><code>unauthorized</code></td><td>Missing, unknown, or revoked API key.</td></tr>
+        <tr><td>405</td><td><code>method_not_allowed</code></td><td>Use POST.</td></tr>
+        <tr><td>500</td><td><code>server_error</code></td><td>Ours. Safe to retry — see idempotency below.</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2 id="idempotency">Idempotency</h2>
+    <p><code>order_id</code> is the idempotency key. Sending the same order twice updates it rather than creating a duplicate, so retrying after a timeout is always safe — which matters, given that a retry-after-timeout is one of the failure modes Relay exists to catch.</p>
+
+    <h2 id="privacy">What we store</h2>
+    <p>The three objects you send, verbatim, so a disputed verdict can always be re-derived from the original inputs. Raw payloads are purged after 90 days; verdicts and flags are kept without personal data.</p>
+    <p><b>We never receive or store card numbers</b> — only your processor's charge references. That keeps Relay outside your PCI scope, and we intend to keep it that way: there is no field in our schema for a card number.</p>
+    <p>Every customer's data is isolated at the database level by row-level security, not by application code, so a bug in our UI cannot expose your orders to anyone else.</p>
+  </main>
+</div>
+
+<script src="config.js"></script>
+<script src="setup.js"></script>
+<script src="nav.js"></script>
+<script>
+// The docs sidebar had a hard-coded "Sign in" link. Signed in already, it sent
+// you to a login page that bounced you somewhere unexpected — a dead end from
+// the reader's point of view. It now reflects the session it finds.
+(async function () {
+  var link = document.getElementById("docs-auth");
+  if (!link || !window.RELAY_SETUP || !window.RELAY_SETUP.isConfigured()) return;
+  // Only load the auth bundle for readers who are actually signed in — a docs
+  // page should not cost a signed-out reader 120KB to render one link.
+  if (!window.RelayNav.hasSession()) return;
+  if (!await window.RelayNav.ready()) return;
+  var cfg = window.RELAY_CONFIG || {};
+  var sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+  sb.auth.getSession().then(function (r) {
+    if (r.data && r.data.session) {
+      link.textContent = "Open your console";
+      link.href = "app.html";
+      link.insertAdjacentHTML("afterend", '<a href="account.html">Profile &amp; settings</a>');
+    }
+  }).catch(function () { /* leave the signed-out link alone */ });
+})();
+</script>
+</body>
+</html>

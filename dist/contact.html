@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="relay.css">
+<link rel="stylesheet" href="site.css">
+<title>Contact — Relay</title>
+<meta name="description" content="Talk to Relay about a pilot, enterprise pricing, or anything else. Messages go straight into our queue.">
+<link rel="canonical" href="https://relay-travel.ai/contact.html">
+<meta property="og:title" content="Contact — Relay">
+<meta property="og:description" content="Talk to Relay about a pilot, enterprise pricing, or anything else. Messages go straight into our queue.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:image" content="https://relay-travel.ai/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:image" content="https://relay-travel.ai/og-image.png">
+</head>
+<body class="page">
+<div id="nav"><nav class="top"><div class="wrap"><a class="wordmark" href="index.html"><span class="baton"><img src="logo.png" alt=""></span>Relay</a><div class="navlinks"><a href="product.html">Product</a><a href="pricing.html">Pricing</a><a href="docs.html">Docs</a><a href="demo.html">Live demo</a><a href="contact.html" class="here">Contact</a></div><div class="nav-right" id="nav-right"><a class="nav-signin" href="login.html">Sign in</a><a class="nav-cta" href="login.html?mode=signup&amp;next=app.html">Start free</a></div><button class="nav-burger" id="nav-burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav-drawer"><span></span><span></span><span></span></button></div><div class="nav-drawer" id="nav-drawer" hidden><a href="product.html">Product</a><a href="pricing.html">Pricing</a><a href="docs.html">Docs</a><a href="demo.html">Live demo</a><a href="contact.html" class="here">Contact</a><a class="drawer-cta" href="login.html?mode=signup&amp;next=app.html">Start free sandbox</a><a class="drawer-alt" href="login.html">Sign in</a></div></nav></div>
+
+<header class="page-head">
+  <div class="wrap narrow">
+    <span class="eyebrow">Contact</span>
+    <h1 id="head">Talk to us</h1>
+    <p class="lede" id="sub">A real person reads every one of these, usually the same day.</p>
+  </div>
+</header>
+
+<section style="padding-top:16px">
+  <div class="wrap narrow">
+    <div class="formcard">
+      <div id="msg"></div>
+      <form id="form">
+        <div class="field">
+          <label class="field-label" for="topic">What's this about?</label>
+          <select id="topic">
+            <option value="general">A general question</option>
+            <option value="partner">Becoming a design partner</option>
+            <option value="enterprise">Enterprise or high-volume pricing</option>
+            <option value="security">Security or data protection review</option>
+            <option value="support">Something isn't working</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label" for="name">Your name</label>
+          <input type="text" id="name" autocomplete="name" required>
+        </div>
+        <div class="field">
+          <label class="field-label" for="email">Email</label>
+          <input type="email" id="email" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label class="field-label" for="company">Company <span style="font-weight:400;color:var(--ink-faint)">(optional)</span></label>
+          <input type="text" id="company" autocomplete="organization">
+        </div>
+        <div class="field">
+          <label class="field-label" for="body">Message</label>
+          <textarea id="body" required placeholder="What are you booking, roughly how much of it, and what's going wrong?"></textarea>
+        </div>
+        <button class="btn primary block" id="send" type="submit">Send message</button>
+      </form>
+      <p class="foot-note">This goes into Relay's own database, not an inbox rule — so it can't be lost in a
+        spam folder. We use it to reply to you and nothing else.</p>
+    </div>
+  </div>
+</section>
+
+<div class="toast" id="toast"></div>
+<div id="site-footer"><footer><div class="wrap"><div class="cols"><div class="col"><h4>Product</h4><a href="product.html">Overview</a><a href="pricing.html">Pricing</a><a href="demo.html">Live demo</a><a href="app.html">Console</a></div><div class="col"><h4>Developers</h4><a href="docs.html">API reference</a><a href="api-access.html">Request API access</a><a href="docs.html#webhooks">Webhooks</a><a href="docs.html#errors">Errors</a></div><div class="col"><h4>Company</h4><a href="contact.html">Contact</a><a href="contact.html?topic=partner">Become a design partner</a><a href="account.html">Your account</a></div><div class="col"><h4>Trust</h4><a href="security.html">Security</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="contact.html?topic=security">Security review</a></div></div><div class="base"><span>&copy; 2026 Relay &mdash; post-booking integrity for flight &amp; hotel orders.</span><span class="mono">relay-travel.ai</span></div></div></footer></div>
+<script src="config.js"></script>
+<script src="setup.js"></script>
+<script src="nav.js"></script>
+<script>
+(async function () {
+  var profile = await RelayNav.mount({ active: "contact" });
+
+  var TOPICS = {
+    partner:    ["Become a design partner", "Bring 30 days of real orders and we'll show you what Relay finds in them — free, and you keep the findings either way."],
+    enterprise: ["Enterprise pricing", "Volume commitments, annual contracts, procurement and security review. Tell us your order volume and we'll come back with a number."],
+    security:   ["Security review", "Ask us anything about how traveller data is stored, encrypted and deleted. We'll answer in writing."],
+    support:    ["Something isn't working", "Include the order ID and roughly when it happened and we can look it up directly."],
+  };
+
+  var params = new URLSearchParams(location.search);
+  var topic = params.get("topic") || "general";
+  if (TOPICS[topic]) {
+    document.getElementById("head").textContent = TOPICS[topic][0];
+    document.getElementById("sub").textContent = TOPICS[topic][1];
+  }
+  var sel = document.getElementById("topic");
+  if ([].some.call(sel.options, function (o) { return o.value === topic; })) sel.value = topic;
+
+  // Signed in? Don't make them retype what we already know.
+  if (profile) {
+    document.getElementById("email").value = profile.email || "";
+    document.getElementById("name").value = profile.name || "";
+  }
+
+  var msgEl = document.getElementById("msg");
+  var toastEl = document.getElementById("toast");
+  function message(text, kind) {
+    msgEl.innerHTML = text ? '<div class="notice ' + (kind || "") + '">' + text + "</div>" : "";
+  }
+  function toast(t) {
+    toastEl.textContent = t; toastEl.classList.add("show");
+    setTimeout(function () { toastEl.classList.remove("show"); }, 2400);
+  }
+
+  document.getElementById("form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var btn = document.getElementById("send");
+    var sb = RelayNav.client();
+
+    if (!sb) {
+      message("This site isn't connected to its database yet, so the form can't send. " +
+              "In the meantime, reach us at <b>yduan2435@gmail.com</b>.", "error");
+      return;
+    }
+
+    btn.disabled = true; btn.textContent = "Sending…";
+    var row = {
+      topic: sel.value,
+      name: document.getElementById("name").value.trim(),
+      email: document.getElementById("email").value.trim(),
+      company: document.getElementById("company").value.trim() || null,
+      body: document.getElementById("body").value.trim(),
+      source_page: "contact",
+    };
+    var res = await sb.from("contact_messages").insert(row);
+
+    if (res.error) {
+      message("Couldn't send that: " + res.error.message, "error");
+      btn.disabled = false; btn.textContent = "Send message";
+      return;
+    }
+    document.getElementById("form").hidden = true;
+    message("<b>Sent.</b> We've got it — expect a reply at " + row.email.replace(/[<>&]/g, "") + ".", "good");
+    toast("Message sent");
+  });
+})();
+</script>
+</body>
+</html>

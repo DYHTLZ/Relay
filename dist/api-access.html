@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="relay.css">
+<link rel="stylesheet" href="site.css">
+<title>Request API access — Relay</title>
+<meta name="description" content="Get a Relay API key. Sandbox access is instant and self-serve; live keys are granted after a short review.">
+<link rel="canonical" href="https://relay-travel.ai/api-access.html">
+<meta property="og:title" content="Request API access — Relay">
+<meta property="og:description" content="Get a Relay API key. Sandbox access is instant and self-serve; live keys are granted after a short review.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:image" content="https://relay-travel.ai/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:image" content="https://relay-travel.ai/og-image.png">
+</head>
+<body class="page">
+<div id="nav"><nav class="top"><div class="wrap"><a class="wordmark" href="index.html"><span class="baton"><img src="logo.png" alt=""></span>Relay</a><div class="navlinks"><a href="product.html">Product</a><a href="pricing.html">Pricing</a><a href="docs.html">Docs</a><a href="demo.html">Live demo</a><a href="contact.html">Contact</a></div><div class="nav-right" id="nav-right"><a class="nav-signin" href="login.html">Sign in</a><a class="nav-cta" href="login.html?mode=signup&amp;next=app.html">Start free</a></div><button class="nav-burger" id="nav-burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav-drawer"><span></span><span></span><span></span></button></div><div class="nav-drawer" id="nav-drawer" hidden><a href="product.html">Product</a><a href="pricing.html">Pricing</a><a href="docs.html">Docs</a><a href="demo.html">Live demo</a><a href="contact.html">Contact</a><a class="drawer-cta" href="login.html?mode=signup&amp;next=app.html">Start free sandbox</a><a class="drawer-alt" href="login.html">Sign in</a></div></nav></div>
+
+<header class="page-head">
+  <div class="wrap">
+    <span class="eyebrow">API access</span>
+    <h1>Sandbox access is instant. Live keys take one conversation.</h1>
+    <p class="lede">Sandbox is self-serve — create an account and you have a working key in under a minute,
+      with all ten detection rules running against test data. Live keys touch real travellers' orders, so we
+      look at what you're building first. That review is usually a single call.</p>
+  </div>
+</header>
+
+<section style="padding-top:24px">
+  <div class="wrap">
+    <div class="grid2">
+
+      <div>
+        <div class="tile" style="padding:28px">
+          <span class="tag">Step 1 — right now</span>
+          <h3 style="font-size:19px;font-family:var(--serif);font-weight:600">Sandbox key, no approval</h3>
+          <p style="margin-top:8px">Create an account, open the console, click <b>Create sandbox key</b>. The raw
+            key is shown once — Relay stores only a hash of it, so nobody, including us, can recover it later.</p>
+          <div class="ctas" style="margin-top:20px">
+            <a class="btn primary" id="cta-signup" href="login.html?mode=signup&next=app.html">Create an account</a>
+            <a class="btn ghost" href="docs.html">Read the docs first</a>
+          </div>
+        </div>
+
+        <div class="tile" style="padding:28px;margin-top:20px">
+          <span class="tag">Step 2 — when you're ready for real orders</span>
+          <h3 style="font-size:19px;font-family:var(--serif);font-weight:600">Live key review</h3>
+          <p style="margin-top:8px">Fill in the form and we'll come back within a business day. We're checking
+            three things: what you're booking, roughly what volume, and where the traveller data comes from.
+            It isn't a credit check — it's so we know what we're protecting.</p>
+        </div>
+
+        <div class="tile" style="padding:28px;margin-top:20px">
+          <h3 style="font-size:17px">Your first call, once you have a key</h3>
+          <pre style="margin-top:14px;font-size:12.4px">curl -X POST https://api.relay-travel.ai/v1/reconcile \
+  -H "Authorization: Bearer sk_test_..." \
+  -H "Content-Type: application/json" \
+  -d '{"order_id":"ord_9F2k",
+       "agreed":{"amount":2480,"currency":"USD"},
+       "charged":{"amount":2480,"capture_count":2},
+       "confirmed":{"status":"failed"}}'</pre>
+          <p class="foot-note">Returns <code>verdict</code>, the specific <code>flags</code>, a recommended
+            <code>resolution</code> and a <code>severity</code>. Full reference in the
+            <a href="docs.html">API docs</a>.</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="formcard" style="margin-top:0">
+          <h2>Request a live key</h2>
+          <p class="sub">Three fields we actually read, and one we don't need but appreciate.</p>
+          <div id="msg"></div>
+          <form id="form">
+            <div class="field">
+              <label class="field-label" for="name">Your name</label>
+              <input type="text" id="name" autocomplete="name" required>
+            </div>
+            <div class="field">
+              <label class="field-label" for="email">Work email</label>
+              <input type="email" id="email" autocomplete="email" required>
+            </div>
+            <div class="field">
+              <label class="field-label" for="company">Company <span style="font-weight:400;color:var(--ink-faint)">(optional)</span></label>
+              <input type="text" id="company" autocomplete="organization">
+            </div>
+            <div class="field">
+              <label class="field-label" for="volume">Roughly how many orders a month?</label>
+              <select id="volume">
+                <option value="pre_launch">Not live yet</option>
+                <option value="lt_1k">Under 1,000</option>
+                <option value="1k_10k">1,000 – 10,000</option>
+                <option value="10k_100k">10,000 – 100,000</option>
+                <option value="gt_100k">Over 100,000</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="field-label" for="usecase">What are you booking, and what goes wrong today?</label>
+              <textarea id="usecase" required placeholder="e.g. our agent books international flights through Duffel; twice last month a card was charged and the ticket never issued and we found out from the customer."></textarea>
+            </div>
+            <button class="btn primary block" id="send" type="submit">Request access</button>
+          </form>
+          <p class="foot-note">No sales sequence. One reply from a person, and a key if it's a fit.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="toast" id="toast"></div>
+<div id="site-footer"><footer><div class="wrap"><div class="cols"><div class="col"><h4>Product</h4><a href="product.html">Overview</a><a href="pricing.html">Pricing</a><a href="demo.html">Live demo</a><a href="app.html">Console</a></div><div class="col"><h4>Developers</h4><a href="docs.html">API reference</a><a href="api-access.html">Request API access</a><a href="docs.html#webhooks">Webhooks</a><a href="docs.html#errors">Errors</a></div><div class="col"><h4>Company</h4><a href="contact.html">Contact</a><a href="contact.html?topic=partner">Become a design partner</a><a href="account.html">Your account</a></div><div class="col"><h4>Trust</h4><a href="security.html">Security</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="contact.html?topic=security">Security review</a></div></div><div class="base"><span>&copy; 2026 Relay &mdash; post-booking integrity for flight &amp; hotel orders.</span><span class="mono">relay-travel.ai</span></div></div></footer></div>
+<script src="config.js"></script>
+<script src="setup.js"></script>
+<script src="nav.js"></script>
+<script>
+(async function () {
+  var profile = await RelayNav.mount({ active: null });
+
+  if (profile) {
+    document.getElementById("email").value = profile.email || "";
+    document.getElementById("name").value = profile.name || "";
+    var cta = document.getElementById("cta-signup");
+    cta.textContent = "Open your console";
+    cta.href = "app.html";
+  }
+
+  var msgEl = document.getElementById("msg");
+  var toastEl = document.getElementById("toast");
+  function message(text, kind) {
+    msgEl.innerHTML = text ? '<div class="notice ' + (kind || "") + '">' + text + "</div>" : "";
+  }
+  function toast(t) {
+    toastEl.textContent = t; toastEl.classList.add("show");
+    setTimeout(function () { toastEl.classList.remove("show"); }, 2400);
+  }
+
+  document.getElementById("form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var sb = RelayNav.client();
+    var btn = document.getElementById("send");
+
+    if (!sb) {
+      message("This site isn't connected to its database yet, so the form can't send. " +
+              "Reach us at <b>yduan2435@gmail.com</b> in the meantime.", "error");
+      return;
+    }
+
+    btn.disabled = true; btn.textContent = "Sending…";
+    var res = await sb.from("access_requests").insert({
+      name: document.getElementById("name").value.trim(),
+      email: document.getElementById("email").value.trim(),
+      company: document.getElementById("company").value.trim() || null,
+      monthly_volume: document.getElementById("volume").value,
+      use_case: document.getElementById("usecase").value.trim(),
+    });
+
+    if (res.error) {
+      message("Couldn't send that: " + res.error.message, "error");
+      btn.disabled = false; btn.textContent = "Request access";
+      return;
+    }
+    document.getElementById("form").hidden = true;
+    message("<b>Request received.</b> We'll reply within one business day. " +
+            "You don't have to wait for us to start — create an account and the sandbox key is instant.", "good");
+    toast("Request sent");
+  });
+})();
+</script>
+</body>
+</html>

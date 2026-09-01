@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="relay.css">
+<link rel="stylesheet" href="site.css">
+<title>Security — Relay</title>
+<meta name="description" content="How Relay stores, isolates and protects travel order data: row-level tenant isolation, hashed API keys, encrypted provider credentials.">
+<link rel="canonical" href="https://relay-travel.ai/security.html">
+<meta property="og:title" content="Security — Relay">
+<meta property="og:description" content="How Relay stores, isolates and protects travel order data: row-level tenant isolation, hashed API keys, encrypted provider credentials.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:image" content="https://relay-travel.ai/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:image" content="https://relay-travel.ai/og-image.png">
+</head>
+<body class="page">
+<div id="nav"></div>
+
+<header class="page-head">
+  <div class="wrap narrow">
+    <span class="eyebrow">Security</span>
+    <h1>What we do, stated plainly — including what we don't do yet.</h1>
+    <p class="lede">Relay handles payment references and traveller names. You should not have to take
+      a vendor's word for how that is protected, so this page describes the actual mechanisms and is
+      explicit about the gaps.</p>
+  </div>
+</header>
+
+<section style="padding-top:8px">
+  <div class="wrap narrow prose">
+
+    <h2>Tenant isolation</h2>
+    <p>Every table carries a <code>workspace_id</code> and has PostgreSQL Row Level Security enabled.
+      A signed-in user can only read rows belonging to a workspace they are a member of, and that is
+      enforced by the database itself — not by front-end code, and not by an ORM that could be
+      bypassed by a crafted request.</p>
+    <p>This is tested rather than asserted. A test suite creates two unrelated workspaces, signs in as
+      each, and fails if either can see a single row belonging to the other — through any table,
+      any view, or any function. It runs after every schema change, because a leak of this kind looks
+      identical to a working system until someone checks.</p>
+
+    <h2>API keys</h2>
+    <p>Keys are stored as SHA-256 hashes with a short display prefix. The raw key is shown once, at
+      creation, and is not recoverable afterwards — not by you, not by us, and not by anyone who
+      obtains a copy of the database. If a key is lost, the only option is to revoke it and create a
+      new one. Revocation takes effect immediately.</p>
+    <p>Test keys and live keys are separate. A <code>sk_test_</code> key can never read live-mode
+      orders; the scope is applied server-side on every request.</p>
+
+    <h2>Provider credentials</h2>
+    <p>Credentials for connected payment processors and suppliers are encrypted at rest with a key
+      held in the database's vault, and the ciphertext never leaves PostgreSQL — decryption happens
+      inside a function that the browser has no permission to call. The functions that can reach the
+      vault are executable only by the service role, which is never present in any page we serve.</p>
+
+    <h2>Moving money</h2>
+    <p>Relay can issue refunds and cancel supplier orders. That is the one part of the system where a
+      bug costs a customer real money, so the rules that govern it are <b>database constraints, not
+      application code</b>. An Edge Function can be redeployed by anyone with dashboard access; a
+      constraint in Postgres survives that.</p>
+    <ul>
+      <li><b>Off by default.</b> Remediation is disabled per workspace until you switch it on. A
+        workspace that has never considered it can never have money moved on its behalf.</li>
+      <li><b>Approve first.</b> A plan cannot reach the executing state without an approval, enforced
+        by a status-machine trigger rather than an <code>if</code> statement. You can raise a per-flag
+        ceiling to let small, well-understood fixes run automatically; an unbounded automatic policy is
+        deliberately not expressible.</li>
+      <li><b>Exactly once.</b> Each plan has a unique key derived from the workspace, order, flag and
+        action, and the same key is sent to Stripe. Proposing twice returns the original plan; a retry
+        after a timeout returns the original refund instead of issuing a second one.</li>
+      <li><b>Amounts come from the order.</b> Never from the request body — so a caller asking to
+        remediate an order cannot influence how much money moves.</li>
+      <li><b>Customers cannot execute.</b> Members propose and approve; only the service role executes.
+        A customer cannot author a refund plan, and cannot mark one succeeded that never ran.</li>
+      <li><b>Append-only history.</b> Every transition is recorded with who and when, in a table with
+        no update or delete policy for anyone.</li>
+    </ul>
+    <p>These are asserted by an 18-check suite that runs against the schema, including a simulated
+      double refund, an unapproved execution, and one tenant trying to approve another's fix.</p>
+
+    <h2>Transport and infrastructure</h2>
+    <p>Everything is served over HTTPS. The database and API run on Supabase (PostgreSQL) in a single
+      region, currently <b>US East</b>. Backups are managed by Supabase. If your data must stay in a
+      specific jurisdiction, tell us before you send anything — we would rather move the deployment
+      than discover the constraint later.</p>
+
+    <h2>Webhooks</h2>
+    <p>Outbound deliveries carry an <code>X-Relay-Signature</code> header. Verify it before trusting a
+      payload; the method is documented in the <a href="docs.html#webhooks">API reference</a>.
+      Inbound webhooks from providers are signature-verified with timestamp replay protection, and an
+      unverified payload is recorded but never allowed to write orders or cash flow.</p>
+
+    <h2>What is not in place yet</h2>
+    <p>Relay is early, and pretending otherwise would be the least secure thing on this page.</p>
+    <ul>
+      <li><b>No SOC 2 or ISO 27001.</b> No audit has been performed. If you need one to buy, say so
+        and we will tell you honestly where that sits on the roadmap.</li>
+      <li><b>No penetration test</b> by an external firm.</li>
+      <li><b>No SSO or SCIM.</b> Sign-in is email/password, Google, or GitHub.</li>
+      <li><b>No customer-managed encryption keys</b> and no per-customer data residency.</li>
+      <li><b>No formal uptime SLA</b> except where one is written into a signed agreement.</li>
+    </ul>
+
+    <h2>Reporting a vulnerability</h2>
+    <p>Email <b>yduan2435@gmail.com</b> with "security" in the subject, or use the
+      <a href="contact.html?topic=security">contact form</a>. We will acknowledge within two business
+      days. Please give us a reasonable window to fix an issue before disclosing it publicly. We do
+      not currently run a paid bounty programme, and we will not pursue anyone acting in good faith.</p>
+
+    <p class="foot-note">Last updated 1 September 2026. If something on this page stops being true,
+      it is a bug — <a href="contact.html?topic=security">tell us</a>.</p>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+<script src="config.js"></script>
+<script src="setup.js"></script>
+<script src="nav.js"></script>
+<script>RelayNav.mount({ active: null });</script>
+</body>
+</html>
