@@ -1,16 +1,3 @@
 User-agent: *
 Allow: /
-
-# Signed-in surfaces. Listed with and without the .html extension because the
-# host may serve either form, and a rule that only covers one is a rule that
-# does not work.
-Disallow: /app.html
-Disallow: /app
-Disallow: /login.html
-Disallow: /login
-Disallow: /account.html
-Disallow: /account
-Disallow: /checkout.html
-Disallow: /checkout
-
 Sitemap: https://relay-travel.ai/sitemap.xml

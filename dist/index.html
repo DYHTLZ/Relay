@@ -1,549 +1,336 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Relay — Post-booking integrity for travel orders</title>
-<meta name="description" content="Relay checks that every flight and hotel order actually delivered what was paid for — catching failed ticketing, duplicate charges, price drift, and mismatched bookings the moment they happen.">
-<link rel="canonical" href="https://relay-travel.ai/">
-<meta property="og:title" content="Relay — post-booking integrity for flight &amp; hotel orders">
-<meta property="og:description" content="Payment succeeded doesn't mean the trip did. Relay reconciles what was agreed, what was charged, and what the supplier confirmed.">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Relay — the shared AI agent for group travel</title>
+<meta name="description" content="Relay joins your group chat, asks everyone what they actually want in private, and comes back with two or three options the group can vote on. Stop being the group's travel agent.">
+<link rel="icon" href="favicon.png" type="image/png">
+<meta property="og:title" content="Relay — the shared AI agent for group travel">
+<meta property="og:description" content="Five people, twenty messages, still no dates. Relay closes the decision inside the chat you already use.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://relay-travel.ai/">
 <meta property="og:image" content="https://relay-travel.ai/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta name="twitter:image" content="https://relay-travel.ai/og-image.png">
-<meta property="og:url" content="https://relay-travel.ai/">
+<meta property="og:image:alt" content="Relay — stop being your group chat’s travel agent.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#f7f6f3">
-<link rel="icon" type="image/png" href="favicon.png">
-<style>
-
-  :root {
-    --ink: #1c1c1e;
-    --ink-soft: #6b6b70;
-    --ink-faint: #6e6e77;
-    --paper: #f7f6f3;
-    --surface: #ffffff;
-    --surface-sunk: #efeeea;
-    --line: #dcdbd5;
-    --line-strong: #bfbeb7;
-    --accent: #3d5c78;
-    --accent-bright: #4d719b;
-    --accent-soft: #e9eef2;
-    --signal: #3d5c78;
-    --signal-soft: #e9eef2;
-    --ok: #6b6b70;
-    --crit: #3d5c78;
-    --on-accent: #f7f6f3;
-    --serif: 'Fraunces', 'Iowan Old Style', Georgia, serif;
-    --sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
-    /* Code panels get their own tokens. They must NOT be derived from --ink:
-       --ink flips to near-white in dark mode, so a panel painted with it became
-       a white block behind light-grey text — invisible. These follow the theme
-       rather than inverting into it. */
-    --code-bg: #edece6; --code-fg: #26272d; --code-line: #dcdbd5;
-    --code-k: #5340bb; --code-s: #186340; --code-c: #67676f; --code-n: #8c4a0e;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --ink: #eeeeef;
-      --ink-soft: #a3a3a8;
-      --ink-faint: #8e8e97;
-      --paper: #101012;
-      --surface: #17171a;
-      --surface-sunk: #0c0c0e;
-      --line: #2b2b2f;
-      --line-strong: #3d3d42;
-      --accent: #8fb0c9;
-      --accent-bright: #a8c4d9;
-      --accent-soft: #1c2830;
-      --signal: #8fb0c9;
-      --signal-soft: #1c2830;
-      --ok: #a3a3a8;
-      --crit: #8fb0c9;
-      --code-bg: #0b0c0f; --code-fg: #dfe1ea; --code-line: #2b2b2f;
-    --code-k: #a79bff; --code-s: #7fd99b; --code-c: #868da3; --code-n: #f0ab52;
-    --on-accent: #101012;
-    }
-  }
-  :root[data-theme="dark"] {
-    --ink: #eeeeef;
-    --ink-soft: #a3a3a8;
-    --ink-faint: #8e8e97;
-    --paper: #101012;
-    --surface: #17171a;
-    --surface-sunk: #0c0c0e;
-    --line: #2b2b2f;
-    --line-strong: #3d3d42;
-    --accent: #8fb0c9;
-    --accent-bright: #a8c4d9;
-    --accent-soft: #1c2830;
-    --signal: #8fb0c9;
-    --signal-soft: #1c2830;
-    --ok: #a3a3a8;
-    --crit: #8fb0c9;
-    --code-bg: #0b0c0f; --code-fg: #dfe1ea; --code-line: #2b2b2f;
-    --code-k: #a79bff; --code-s: #7fd99b; --code-c: #868da3; --code-n: #f0ab52;
-    --on-accent: #101012;
-  }
-
-  * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body {
-    margin: 0; background: var(--paper); color: var(--ink);
-    font-family: var(--sans); font-size: 16px; line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-  }
-  img, svg { max-width: 100%; }
-  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 28px; }
-  section { padding: 96px 0; }
-  h1, h2, h3 { font-family: var(--serif); font-weight: 600; text-wrap: balance; margin: 0; }
-  p { margin: 0; }
-  a { color: inherit; }
-  .eyebrow {
-    font-family: var(--mono); font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.11em;
-    color: var(--accent); font-weight: 500; display: inline-flex; align-items: center; gap: 8px;
-  }
-  .eyebrow::before { content: ""; width: 14px; height: 1px; background: var(--accent); display: inline-block; }
-  .lede { font-size: 19px; color: var(--ink-soft); max-width: 54ch; line-height: 1.65; }
-
-  /* ---- nav ---- */
-  nav.top {
-    position: sticky; top: 0; z-index: 50; backdrop-filter: blur(10px);
-    background: color-mix(in srgb, var(--paper) 82%, transparent);
-    border-bottom: 1px solid var(--line);
-  }
-  nav.top .wrap { display: flex; align-items: center; justify-content: space-between; padding-top: 16px; padding-bottom: 16px; }
-  .wordmark { display: flex; align-items: center; gap: 9px; font-family: var(--serif); font-size: 19px; font-weight: 600; }
-  .wordmark .baton {
-    width: 26px; height: 26px; flex: none; border-radius: 7px;
-    background: #f7f5f0; padding: 3px; display: inline-flex;
-  }
-  .wordmark .baton img { width: 100%; height: 100%; display: block; }
-  .navlinks { display: flex; gap: 30px; font-size: 14px; color: var(--ink-soft); }
-  .navlinks a { text-decoration: none; transition: color .15s; }
-  .navlinks a:hover { color: var(--ink); }
-  .nav-cta {
-    font-family: var(--sans); font-size: 13.5px; font-weight: 600; color: var(--on-accent);
-    background: var(--ink); border: none; border-radius: 7px; padding: 9px 15px; cursor: pointer; text-decoration: none;
-  }
-
-  /* ---- hero ---- */
-  .hero { padding: 72px 0 48px; }
-  /* Two columns on desktop so the real verdict sits ABOVE the fold next to the
-     claim, rather than below it where a visitor has to scroll to find proof. */
-  .hero .wrap { display: grid; grid-template-columns: 1.02fr 0.98fr; gap: 48px; align-items: center; }
-  @media (max-width: 980px) { .hero .wrap { grid-template-columns: 1fr; gap: 36px; } }
-  .hero h1 { font-size: clamp(38px, 5.4vw, 58px); line-height: 1.08; margin-top: 18px; }
-  .hero h1 em { font-style: italic; color: var(--accent); }
-  .hero .lede { margin-top: 20px; }
-  .hero-ctas { display: flex; gap: 12px; margin-top: 32px; flex-wrap: wrap; }
-  .btn {
-    display: inline-flex; align-items: center; gap: 8px; font-family: var(--sans); font-size: 14.5px; font-weight: 600;
-    padding: 12px 20px; border-radius: 8px; text-decoration: none; border: 1px solid transparent; cursor: pointer;
-  }
-  .btn.primary { background: var(--accent); color: var(--on-accent); }
-  .btn.primary:hover { background: var(--accent-bright); }
-  .btn.ghost { border-color: var(--line-strong); color: var(--ink); }
-  .btn.ghost:hover { border-color: var(--ink-faint); }
-
-  /* ---- hero verdict panel: a real flagged order, not an abstraction ---- */
-  .hero-note { font-size: 13.5px; color: var(--ink-soft); margin-top: 14px; }
-  .verdict-panel {
-    background: var(--surface); border: 1px solid var(--line-strong); border-radius: 16px;
-    padding: 22px 24px 20px; font-size: 14px;
-  }
-  .vp-head {
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    padding-bottom: 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap;
-  }
-  .vp-head .mono { font-family: var(--mono); font-size: 12.5px; color: var(--ink-soft); }
-  .vp-badge {
-    font-family: var(--mono); font-size: 10.5px; letter-spacing: .07em; font-weight: 600;
-    color: var(--on-accent); background: var(--accent); padding: 4px 10px; border-radius: 999px;
-  }
-  .vp-views { display: flex; flex-direction: column; gap: 0; }
-  .vp-view {
-    display: flex; justify-content: space-between; align-items: baseline; gap: 16px;
-    padding: 12px 0; border-bottom: 1px solid var(--line); flex-wrap: wrap;
-  }
-  .vp-view .mono { font-family: var(--mono); font-size: 13px; }
-  .vp-view.bad .mono { color: var(--danger); font-weight: 600; }
-  .vp-label {
-    font-family: var(--mono); font-size: 10.5px; text-transform: uppercase;
-    letter-spacing: .07em; color: var(--ink-soft);
-  }
-  .vp-flag { padding: 16px 0 4px; }
-  .vp-flag code {
-    font-family: var(--mono); font-size: 12.5px; color: var(--accent);
-    background: var(--accent-soft); border-radius: 5px; padding: 2px 7px;
-  }
-  .vp-flag p { margin-top: 9px; color: var(--ink-soft); font-size: 14px; }
-  .vp-action { padding: 14px 0 16px; border-bottom: 1px solid var(--line); }
-  .vp-action p { margin-top: 7px; font-size: 14.5px; }
-  .vp-foot { padding-top: 14px; font-size: 12.5px; color: var(--ink-soft); }
-  .vp-approve { display: flex; align-items: center; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
-  .vp-btn {
-    font-size: 12.5px; font-weight: 600; color: var(--on-accent); background: var(--accent);
-    padding: 7px 16px; border-radius: 7px;
-  }
-  .vp-hint { font-size: 12.5px; color: var(--ink-soft); }
-  .vp-action code { font-family: var(--mono); font-size: 12.5px; }
-
-  /* ---- chain / problem ---- */
-  .chain-wrap { border-top: 1px solid var(--line); }
-  .chain { display: flex; align-items: center; flex-wrap: wrap; gap: 0; margin-top: 40px; font-family: var(--mono); font-size: 13px; }
-  .chain .node { background: var(--surface-sunk); border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; color: var(--ink-soft); }
-  .chain .arrow { color: var(--ink-soft); padding: 0 8px; }
-  .two-col { display: grid; grid-template-columns: 1.1fr 1fr; gap: 64px; align-items: start; }
-  .fail-list { display: flex; flex-direction: column; gap: 0; margin-top: 8px; }
-  .fail-list .item { display: flex; gap: 14px; padding: 15px 0; border-bottom: 1px solid var(--line); }
-  .fail-list .item:last-child { border-bottom: none; }
-  .fail-list .mk { font-family: var(--mono); color: var(--crit); flex: none; width: 18px; padding-top: 2px; }
-  .fail-list .tx b { font-weight: 600; }
-  .fail-list .tx span { color: var(--ink-soft); display: block; font-size: 14px; margin-top: 2px; }
-
-  /* ---- how it works ---- */
-  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 48px; }
-  .step .num { font-family: var(--serif); font-style: italic; font-size: 34px; color: var(--accent); }
-  .step h3 { font-family: var(--sans); font-size: 17px; font-weight: 700; margin-top: 10px; }
-  .step p { color: var(--ink-soft); margin-top: 8px; font-size: 14.5px; }
-
-  /* ---- code panels ---- */
-  .code-panels { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 52px; }
-  .code-card { background: var(--code-bg); border-radius: 14px; overflow: hidden; border: 1px solid var(--code-line); }
-  .code-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--code-line); }
-  .code-head .dots { display: flex; gap: 6px; }
-  .code-head .dots span { width: 9px; height: 9px; border-radius: 999px; background: var(--code-c); }
-  .code-head .label { font-family: var(--mono); font-size: 11.5px; color: var(--code-c); }
-  pre {
-    margin: 0; padding: 18px 18px 22px; overflow-x: auto; font-family: var(--mono); font-size: 12.8px;
-    line-height: 1.65; color: var(--code-fg);
-  }
-  pre .k { color: var(--code-k); }
-  pre .s { color: var(--code-s); }
-  pre .c { color: var(--code-c); }
-  pre .n { color: var(--code-n); }
-
-  /* ---- anomaly grid ---- */
-  .anomaly-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; margin-top: 48px; }
-  .anomaly { background: var(--surface); padding: 22px 20px; }
-  .anomaly .tag { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--signal); }
-  .anomaly h4 { font-family: var(--sans); font-weight: 600; font-size: 15px; margin: 8px 0 6px; }
-  .anomaly p { font-size: 13px; color: var(--ink-soft); }
-
-  /* ---- positioning ---- */
-  .pos-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 48px; }
-  .pos-card { border: 1px solid var(--line); border-radius: 14px; padding: 22px; background: var(--surface); }
-  .pos-card .who { font-family: var(--mono); font-size: 11.5px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .05em; }
-  .pos-card .they { font-size: 14px; color: var(--ink-soft); margin-top: 10px; }
-  .pos-card .we { font-size: 14px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line-strong); }
-  .pos-card .we b { color: var(--accent); font-weight: 600; }
-
-  /* ---- cta band ---- */
-  .cta-band { background: var(--surface); border: 1px solid var(--line-strong); border-radius: 20px; padding: 64px 56px; text-align: left; }
-  .cta-band h2 { color: var(--ink); font-size: clamp(28px, 3.4vw, 40px); }
-  .cta-band p { color: var(--ink-soft); margin-top: 14px; max-width: 52ch; }
-  .cta-band .hero-ctas { margin-top: 28px; }
-  .cta-band .btn.ghost { border-color: var(--line-strong); color: var(--ink); }
-
-
-  /* mobile nav — see site.css for the drawer styles this pairs with */
-  .nav-burger {
-    display: none; background: none; border: 1px solid var(--line-strong);
-    border-radius: 8px; width: 40px; height: 38px; cursor: pointer;
-    padding: 0; align-items: center; justify-content: center; flex-direction: column; gap: 4px;
-  }
-  .nav-burger span { display: block; width: 17px; height: 1.5px; background: var(--ink); transition: transform .18s ease, opacity .18s ease; }
-  .nav-burger.open span:nth-child(1) { transform: translateY(5.5px) rotate(45deg); }
-  .nav-burger.open span:nth-child(2) { opacity: 0; }
-  .nav-burger.open span:nth-child(3) { transform: translateY(-5.5px) rotate(-45deg); }
-  .nav-drawer { display: none; }
-
-  @media (max-width: 880px) {
-    .navlinks { display: none; }
-    .nav-burger { display: flex; }
-    .nav-drawer:not([hidden]) { display: block; background: var(--surface); border-top: 1px solid var(--line); }
-    .nav-right .nav-signin { display: none; }
-    .hero .wrap { gap: 32px; }
-    .two-col, .code-panels, .steps { grid-template-columns: 1fr; }
-    .anomaly-grid { grid-template-columns: repeat(2, 1fr); }
-    .pos-strip { grid-template-columns: 1fr; }
-    .cta-band { padding: 44px 28px; }
-  }
-</style>
-<link rel="stylesheet" href="site.css">
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": "https://relay-travel.ai/#org",
-      "name": "Relay",
-      "url": "https://relay-travel.ai/",
-      "logo": "https://relay-travel.ai/logo.png",
-      "description": "Post-booking integrity for flight and hotel orders."
-    },
-    {
-      "@type": "SoftwareApplication",
-      "name": "Relay",
-      "applicationCategory": "BusinessApplication",
-      "applicationSubCategory": "Travel order reconciliation API",
-      "operatingSystem": "Any",
-      "url": "https://relay-travel.ai/",
-      "publisher": { "@id": "https://relay-travel.ai/#org" },
-      "offers": [
-        { "@type": "Offer", "name": "Sandbox", "price": "0", "priceCurrency": "USD" },
-        { "@type": "Offer", "name": "Growth", "price": "249", "priceCurrency": "USD" },
-        { "@type": "Offer", "name": "Scale", "price": "1200", "priceCurrency": "USD" }
-      ]
-    }
-  ]
-}
-</script>
+<meta name="twitter:image" content="https://relay-travel.ai/og-image.png">
+<link rel="canonical" href="https://relay-travel.ai/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="relay.css">
 </head>
 <body>
-<div id="nav"><nav class="top"><div class="wrap"><a class="wordmark" href="index.html"><span class="baton"><img src="logo.png" alt=""></span>Relay</a><div class="navlinks"><a href="product.html">Product</a><a href="pricing.html">Pricing</a><a href="docs.html">Docs</a><a href="demo.html">Live demo</a><a href="contact.html">Contact</a></div><div class="nav-right" id="nav-right"><a class="nav-signin" href="login.html">Sign in</a><a class="nav-cta" href="login.html?mode=signup&amp;next=app.html">Start free</a></div><button class="nav-burger" id="nav-burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav-drawer"><span></span><span></span><span></span></button></div><div class="nav-drawer" id="nav-drawer" hidden><a href="product.html">Product</a><a href="pricing.html">Pricing</a><a href="docs.html">Docs</a><a href="demo.html">Live demo</a><a href="contact.html">Contact</a><a class="drawer-cta" href="login.html?mode=signup&amp;next=app.html">Start free sandbox</a><a class="drawer-alt" href="login.html">Sign in</a></div></nav></div>
+<a class="skip" href="#main">Skip to content</a>
 
-<header class="hero">
-  <div class="wrap">
-    <div>
-      <span class="eyebrow">Post-booking integrity for flight &amp; hotel orders</span>
-      <h1>Payment succeeded doesn't mean<br><em>the trip did.</em></h1>
-      <p class="lede">Catch charged-but-unbooked travel orders in seconds — then fix them. Relay compares what the customer <b>agreed</b> to, what was <b>charged</b>, and what the supplier <b>confirmed</b>, shows you exactly where the three stop matching, and issues the refund once you approve it.</p>
-      <div class="hero-ctas">
-        <a class="btn primary" href="login.html?mode=signup&amp;next=app.html">Start free sandbox</a>
-        <a class="btn ghost" href="demo.html">Try the live demo</a>
-      </div>
-      <p class="hero-note">No approval needed to start. A working key in under a minute, against test data.</p>
-    </div>
-
-    <div class="verdict-panel">
-      <div class="vp-head">
-        <span class="mono">order ord_9F2k</span>
-        <span class="vp-badge">FLAGGED · CRITICAL</span>
-      </div>
-
-      <div class="vp-views">
-        <div class="vp-view"><span class="vp-label">Agreed</span><span class="mono">$2,480.00 · SFO&#8209;NRT · refundable</span></div>
-        <div class="vp-view"><span class="vp-label">Charged</span><span class="mono">$2,480.00 · stripe · 1 capture</span></div>
-        <div class="vp-view bad"><span class="vp-label">Confirmed</span><span class="mono">status: failed</span></div>
-      </div>
-
-      <div class="vp-flag">
-        <code>unissued_after_charge</code>
-        <p>Charged 2480 but supplier order status is &ldquo;failed&rdquo;.</p>
-      </div>
-
-      <div class="vp-action">
-        <span class="vp-label">Relay's fix</span>
-        <p>Refund the surplus capture — <b>$2,480.00</b> on <code>ch_1P4x</code>.</p>
-        <div class="vp-approve">
-          <span class="vp-btn">Approve</span>
-          <span class="vp-hint">Nothing moves until you do.</span>
-        </div>
-      </div>
-
-      <div class="vp-foot">Deterministic. No score, no model — reproduce it by hand from the three inputs.</div>
-    </div>
+<header class="nav" id="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="/" aria-label="Relay — home">
+      <img class="light-only" src="wordmark-ink.png" alt="Relay" width="223" height="44">
+      <img class="dark-only" src="wordmark-paper.png" alt="Relay" width="224" height="44">
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="#how">How it works</a>
+      <a href="#private">Privacy by design</a>
+      <a href="#roadmap">Where this goes</a>
+      <a class="btn btn-primary" href="#waitlist">Join the waitlist</a>
+    </nav>
   </div>
 </header>
 
-<div class="chain-wrap">
-  <section id="problem">
-    <div class="wrap">
-      <span class="eyebrow">The problem</span>
-      <h2 style="font-size: clamp(26px, 3vw, 34px); margin-top: 14px; max-width: 30ch;">One booking crosses six independent systems with no shared definition of success.</h2>
-      <div class="chain">
-        <span class="node">AI agent</span><span class="arrow">→</span>
-        <span class="node">payment platform</span><span class="arrow">→</span>
-        <span class="node">flight API</span><span class="arrow">→</span>
-        <span class="node">airline</span><span class="arrow">→</span>
-        <span class="node">hotel API</span><span class="arrow">→</span>
-        <span class="node">hotel system</span>
-      </div>
+<main id="main">
 
-      <div class="two-col" style="margin-top:56px;">
-        <div>
-          <p class="lede" style="font-size:16px;">"Payment succeeded" tells you nothing about whether the ticket was actually issued, the price held, the fare rules stayed the same, or the trip completed end to end. Today a human catches this — checking payment logs, checking the supplier order, emailing an airline, filing for a refund, and following up for days. That holds up at the pace of a call center. It does not hold up once an agent is booking travel autonomously, because the same failure now happens faster and at volume.</p>
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="pill"><span class="dot"></span> Private beta · first groups this month</p>
+      <h1 class="h1">Stop being your group chat&rsquo;s travel agent.</h1>
+      <p class="lede" style="margin-top:20px">
+        Relay joins the chat you already use, asks each person what they actually want
+        in private, and comes back with two or three real options the group can vote on.
+        No spreadsheet. No chasing four people for dates.
+      </p>
+      <div class="hero-cta">
+        <a class="btn btn-primary btn-lg" href="#waitlist">Join the waitlist</a>
+        <a class="btn btn-ghost btn-lg" href="#how">See how it works</a>
+      </div>
+      <p class="fine hero-note">Works inside iMessage and WhatsApp. Nothing to download.</p>
+    </div>
+
+    <div class="phone" role="img" aria-label="A group chat where Relay posts three hotel options with trade-offs and the group votes by replying with a number.">
+      <div class="phone-top">
+        <div class="avatars" aria-hidden="true">
+          <span>J</span><span>A</span><span>S</span><span>K</span><span>E</span>
         </div>
-        <div class="fail-list">
-          <div class="item"><span class="mk">✕</span><div class="tx"><b>Charged, never ticketed</b><span>the payment cleared but the booking failed downstream</span></div></div>
-          <div class="item"><span class="mk">✕</span><div class="tx"><b>Duplicate charge</b><span>a retried call after a timeout books once, charges twice</span></div></div>
-          <div class="item"><span class="mk">✕</span><div class="tx"><b>Price drift</b><span>the amount charged doesn't match what the customer agreed to</span></div></div>
-          <div class="item"><span class="mk">✕</span><div class="tx"><b>Terms changed</b><span>a refundable fare quietly books as non-refundable</span></div></div>
-          <div class="item"><span class="mk">✕</span><div class="tx"><b>Refund that never lands</b><span>marked "processed" on one side, absent on the other</span></div></div>
+        <b>Japan 2027</b>
+        <span class="count">5 people</span>
+      </div>
+      <div class="thread">
+        <div class="msg them"><span class="who">Alex</span>ok but we&rsquo;ve been saying december since june</div>
+        <div class="msg relay">
+          <span class="who">Relay</span>
+          Everyone&rsquo;s in. Dec 21&ndash;27 is the only week that clears all five calendars.
+          Three places to stay &mdash; reply with a number.
+          <div class="opt"><b>1 &middot; Shibuya</b><span class="tag">$205 &middot; 3 want it</span></div>
+          <div class="opt"><b>2 &middot; Asakusa</b><span class="tag win">$143 &middot; fits every budget</span></div>
+          <div class="opt"><b>3 &middot; Shinjuku</b><span class="tag">$182 &middot; best transit</span></div>
+        </div>
+        <div class="msg me">2</div>
+        <div class="msg them"><span class="who">Sarah</span>2</div>
+        <div class="msg relay"><span class="who">Relay</span>
+          That&rsquo;s 4 of 5. Nudging Kevin now &mdash; I&rsquo;ll close this at 9pm either way.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE PAIN ============ -->
+<section class="panel" id="why">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">The real operating system of group travel</p>
+      <h2 class="h2">A group chat, a spreadsheet, and one exhausted organiser.</h2>
+      <p class="lede">
+        Every AI travel product makes the planning faster. None of them take the organiser
+        out of the middle. The hard part was never finding a flight &mdash; it was getting
+        five people to agree on one, and keeping track of who said yes to what.
+      </p>
+    </div>
+    <div class="grid g4">
+      <div class="card"><h3 class="h3">Five people</h3><p>Five sets of constraints, and most of them never said the real one out loud.</p></div>
+      <div class="card"><h3 class="h3">Twenty messages</h3><p>The dates get re-litigated every time someone scrolls up and misses a reply.</p></div>
+      <div class="card"><h3 class="h3">One spreadsheet</h3><p>Built by the organiser, read by nobody, out of date by Tuesday.</p></div>
+      <div class="card"><h3 class="h3">No decision</h3><p>The fare moves, the room goes, and the thread starts again from the top.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section id="how">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">How it works</p>
+      <h2 class="h2">Five steps, inside the chat you already have.</h2>
+      <p class="lede">There is no app to install and no new group to move everyone into.
+        Relay is a contact the organiser adds.</p>
+    </div>
+    <ol class="steps">
+      <li class="step">
+        <div class="step-n">1</div>
+        <div><h3 class="h3">Add Relay to the group</h3>
+        <p>The organiser adds one contact. Relay introduces itself and opens a trip &mdash;
+           a shared object that outlives any single message.</p></div>
+      </li>
+      <li class="step">
+        <div class="step-n">2</div>
+        <div><h3 class="h3">It asks everyone privately</h3>
+        <p>Relay messages each traveller one-to-one: where you&rsquo;re flying from, your real
+           budget, the dates that genuinely don&rsquo;t work. None of it is posted to the group.</p></div>
+      </li>
+      <li class="step">
+        <div class="step-n">3</div>
+        <div><h3 class="h3">It posts two or three options</h3>
+        <p>Not twenty hotels. Two or three real choices, each with the trade-off named out
+           loud &mdash; what it costs, who it suits, who it doesn&rsquo;t.</p></div>
+      </li>
+      <li class="step">
+        <div class="step-n">4</div>
+        <div><h3 class="h3">The group votes by replying</h3>
+        <p>&ldquo;2&rdquo;. That&rsquo;s the whole interaction. Relay tracks quorum and the deadline, and
+           nudges the people who haven&rsquo;t answered by DM instead of in front of everyone.</p></div>
+      </li>
+      <li class="step">
+        <div class="step-n">5</div>
+        <div><h3 class="h3">It closes the decision</h3>
+        <p>Relay announces what was chosen, records who approved it and why, and posts the
+           booking links. The next decision starts from that state, not from scratch.</p></div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ PRIVATE INPUTS ============ -->
+<section class="panel" id="private">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Why people answer honestly</p>
+      <h2 class="h2">Private inputs, one shared outcome.</h2>
+      <p class="lede">
+        People don&rsquo;t say &ldquo;$1,500 is my actual ceiling&rdquo; in a group chat with their friends.
+        They say it to Relay. The group only ever sees the conclusion.
+      </p>
+    </div>
+    <div class="split">
+      <div class="card">
+        <h3 class="h3">Told to Relay, not to the group</h3>
+        <div class="rows">
+          <div class="row"><b>Sarah</b><span>Dec 21&ndash;27 is a hard wall</span></div>
+          <div class="row"><b>Alex</b><span>$1,500 is real, not aspirational</span></div>
+          <div class="row"><b>Justin</b><span>Could leave Dec 20, would rather not</span></div>
+          <div class="row"><b>Kevin</b><span>Will pay up for the hotel</span></div>
+          <div class="row"><b>Emily</b><span>Vegetarian, dates flexible</span></div>
         </div>
       </div>
-    </div>
-  </section>
-</div>
-
-<section id="how" style="border-top: 1px solid var(--line);">
-  <div class="wrap">
-    <span class="eyebrow">How it works</span>
-    <h2 style="font-size: clamp(26px, 3vw, 34px); margin-top: 14px;">Three events in. One verdict out.</h2>
-    <div class="steps">
-      <div class="step"><div class="num">01</div><h3>Send Relay three events</h3><p>What the user agreed to buy, what your payment provider actually charged, and what the supplier ultimately confirmed — via webhook or a direct API call.</p></div>
-      <div class="step"><div class="num">02</div><h3>Relay reconciles in real time</h3><p>It compares the three across amount, dates, passenger details, fare rules, and order completeness — no polling, no end-of-month batch job.</p></div>
-      <div class="step"><div class="num">03</div><h3>Get a verdict and a fix</h3><p>A clean match, or a specific flag with a recommended resolution: refund, retry, cancel, re-book, or escalate to a human.</p></div>
-    </div>
-  </div>
-</section>
-
-<section id="api" style="background: var(--surface-sunk); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);">
-  <div class="wrap">
-    <span class="eyebrow">Built to be called, not clicked</span>
-    <h2 style="font-size: clamp(26px, 3vw, 34px); margin-top: 14px; max-width: 34ch;">One endpoint for your backend. One tool definition for your agent.</h2>
-    <p class="lede" style="margin-top:14px;">Relay is API-first because the thing that needs it isn't a person watching a dashboard — it's the agent that just placed the order. Call it directly after checkout, or register it as a tool your agent framework can invoke on its own.</p>
-
-    <div class="code-panels">
-      <div class="code-card">
-        <div class="code-head"><div class="dots"><span></span><span></span><span></span></div><div class="label">POST /v1/reconcile</div></div>
-        <pre>{
-  <span class="k">"order_id"</span>: <span class="s">"ord_9F2k"</span>,
-  <span class="k">"agreed"</span>: { <span class="k">"amount"</span>: <span class="n">2480.00</span>, <span class="k">"currency"</span>: <span class="s">"USD"</span>,
-              <span class="k">"route"</span>: <span class="s">"SFO-NRT"</span>, <span class="k">"refundable"</span>: <span class="k">true</span> },
-  <span class="k">"charged"</span>: { <span class="k">"amount"</span>: <span class="n">2480.00</span>, <span class="k">"processor"</span>: <span class="s">"stripe"</span>,
-               <span class="k">"charge_id"</span>: <span class="s">"ch_1P..."</span> },
-  <span class="k">"confirmed"</span>: { <span class="k">"supplier"</span>: <span class="s">"duffel"</span>, <span class="k">"status"</span>: <span class="s">"failed"</span> }
-}
-
-<span class="c">// → 200 OK — every field is evidence you can audit</span>
-{
-  <span class="k">"verdict"</span>: <span class="s">"flagged"</span>,
-  <span class="k">"severity"</span>: <span class="s">"critical"</span>,
-  <span class="k">"flags"</span>: [{
-    <span class="k">"code"</span>: <span class="s">"unissued_after_charge"</span>,
-    <span class="k">"severity"</span>: <span class="s">"critical"</span>,
-    <span class="k">"detail"</span>: <span class="s">"Charged 2480 but supplier order</span>
-               <span class="s">status is \"failed\"."</span>
-  }],
-  <span class="k">"resolution"</span>: <span class="s">"Reverse the charge — money was</span>
-                 <span class="s">taken and no product was delivered."</span>,
-  <span class="k">"state"</span>: <span class="s">"settled"</span>,
-  <span class="k">"reconciled_at"</span>: <span class="s">"2027-01-02T09:14:22Z"</span>
-}
-
-<span class="c">// No score, no model. Every flag is a comparison</span>
-<span class="c">// you can reproduce by hand from the three inputs.</span></pre>
-      </div>
-
-      <div class="code-card">
-        <div class="code-head"><div class="dots"><span></span><span></span><span></span></div><div class="label">agent tool definition</div></div>
-        <pre>{
-  <span class="k">"name"</span>: <span class="s">"check_order_integrity"</span>,
-  <span class="k">"description"</span>: <span class="s">"Verify a travel order</span>
-    <span class="s">after checkout by comparing payment,</span>
-    <span class="s">booking request, and supplier confirmation."</span>,
-  <span class="k">"parameters"</span>: {
-    <span class="k">"order_id"</span>: <span class="s">"string"</span>,
-    <span class="k">"agreed"</span>: <span class="s">"object"</span>,
-    <span class="k">"charged"</span>: <span class="s">"object"</span>,
-    <span class="k">"confirmed"</span>: <span class="s">"object"</span>
-  }
-}
-
-<span class="c">// any agent that can call a tool</span>
-<span class="c">// can call Relay after it books.</span></pre>
+      <div class="card">
+        <h3 class="h3">What the group sees</h3>
+        <p style="color:var(--panel-ink);font-size:16.5px;margin-top:10px">
+          Dec 21&ndash;27 works for everyone. Leaving Dec 20 would save $110 each,
+          but fits one person worse.
+        </p>
+        <p class="fine" style="margin-top:16px">
+          Nobody had to say whose constraint it was. No organiser had to become the router.
+        </p>
       </div>
     </div>
   </div>
 </section>
 
-<section id="anomalies">
+<!-- ============ ROADMAP + TEAM ============ -->
+<section id="roadmap">
   <div class="wrap">
-    <span class="eyebrow">What Relay catches</span>
-    <h2 style="font-size: clamp(26px, 3vw, 34px); margin-top: 14px;">Seven ways a "successful" order goes wrong.</h2>
-    <div class="anomaly-grid">
-      <div class="anomaly"><div class="tag">Fulfillment</div><h4>Unissued after charge</h4><p>The card was charged; the ticket never came through.</p></div>
-      <div class="anomaly"><div class="tag">Payment</div><h4>Duplicate charge</h4><p>A retried request after a timeout books once, charges twice.</p></div>
-      <div class="anomaly"><div class="tag">Pricing</div><h4>Price drift</h4><p>The charged amount doesn't match what was agreed to.</p></div>
-      <div class="anomaly"><div class="tag">Terms</div><h4>Fare rule drift</h4><p>Refundable becomes non-refundable somewhere downstream.</p></div>
-      <div class="anomaly"><div class="tag">Details</div><h4>Mismatched record</h4><p>Wrong date, airport, or passenger name on the confirmed order.</p></div>
-      <div class="anomaly"><div class="tag">Completeness</div><h4>Partial order</h4><p>The flight books; the hotel fails — or the reverse.</p></div>
-      <div class="anomaly"><div class="tag">Recovery</div><h4>Refund not landed</h4><p>Marked "processed" upstream, never arrives for the customer.</p></div>
-      <div class="anomaly"><div class="tag">Anything else</div><h4>Unclassified mismatch</h4><p>Doesn't fit a known pattern — flagged for a human, not silently dropped.</p></div>
+    <div class="section-head">
+      <p class="eyebrow">Where this goes</p>
+      <h2 class="h2">From planning a trip to managing it.</h2>
+      <p class="lede">
+        Each version runs on the state the last one created. Coordination first, because
+        without a real shared trip there is nothing to monitor later.
+      </p>
     </div>
-  </div>
-</section>
-
-<section style="border-top: 1px solid var(--line);">
-  <div class="wrap">
-    <span class="eyebrow">Not another travel agent</span>
-    <h2 style="font-size: clamp(26px, 3vw, 34px); margin-top: 14px; max-width: 30ch;">Visa protects the right to spend. Relay protects what the spend bought.</h2>
-    <div class="pos-strip">
-      <div class="pos-card"><div class="who">Planning agents · ChatGPT, Mindtrip</div><div class="they">Recommend and plan the trip.</div><div class="we">Relay <b>doesn't plan anything</b> — it makes sure the order that gets placed completes correctly.</div></div>
-      <div class="pos-card"><div class="who">Payment auth · Visa, Amex Agentic</div><div class="they">Confirm the agent may spend the user's money.</div><div class="we">Relay confirms <b>the money bought what was authorized.</b></div></div>
-      <div class="pos-card"><div class="who">Processors · Stripe, Adyen</div><div class="they">Report whether the charge succeeded.</div><div class="we">Relay reconciles that outcome <b>against what the supplier delivered.</b></div></div>
-    </div>
-  </div>
-</section>
-
-<section id="fix" style="background: var(--surface-sunk); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);">
-  <div class="wrap">
-    <span class="eyebrow">And then it fixes it</span>
-    <h2 style="font-size: clamp(26px, 3vw, 34px); margin-top: 14px; max-width: 32ch;">Detection is half a product. Someone still has to get the money back.</h2>
-    <p class="lede" style="margin-top:14px">Relay proposes the exact fix — refund the surplus capture, refund in full, cancel the half-confirmed order — with the amount worked out from the order itself. You approve. It executes, once, and records what happened.</p>
-
-    <div class="steps" style="margin-top:44px">
-      <div class="step">
-        <div class="num">01</div>
-        <h3>Relay proposes</h3>
-        <p>One plan per flag, with the action, the exact amount and the reasoning. Nothing is executed. The amount is computed from the stored order, never from the request — so nobody can talk Relay into refunding more than the order is worth.</p>
-      </div>
-      <div class="step">
-        <div class="num">02</div>
-        <h3>You approve</h3>
-        <p>In the console, or through your agent. Approve-first is the default, and remediation is off entirely until you switch it on. You can raise a per-flag ceiling to let small, well-understood fixes run on their own.</p>
-      </div>
-      <div class="step">
-        <div class="num">03</div>
-        <h3>It executes once</h3>
-        <p>The refund goes to Stripe, or the cancellation to the supplier, carrying an idempotency key. A retry after a timeout returns the original refund instead of issuing a second one. Every transition is written to an append-only log.</p>
-      </div>
+    <div class="road">
+      <div class="card now"><span class="v">V1 &middot; now</span><h3 class="h3">Coordinate</h3>
+        <p>Understand each traveller and help the group decide what to book.</p></div>
+      <div class="card"><span class="v">V2</span><h3 class="h3">Execute</h3>
+        <p>Complete the bookings and hold the shared trip state.</p></div>
+      <div class="card"><span class="v">V3</span><h3 class="h3">Monitor</h3>
+        <p>Track reservations, prices, schedules and what depends on what.</p></div>
+      <div class="card"><span class="v">V4</span><h3 class="h3">Adapt</h3>
+        <p>Handle disruptions, coordinate approvals, execute the fix.</p></div>
     </div>
 
-    <div class="two-col" style="margin-top:56px">
-      <div>
-        <h3 style="font-family:var(--sans);font-size:17px;font-weight:700">The guarantees live in the database</h3>
-        <p style="color:var(--ink-soft);margin-top:10px;font-size:14.5px">Approval, the kill switch, the auto ceiling and the one-execution-per-plan rule are Postgres constraints, not application code. A redeployed function with a bug in it still cannot move money nobody approved. That is a deliberate choice about where to put the rules that matter.</p>
+    <div class="grid g2" style="margin-top:28px">
+      <div class="card">
+        <h3 class="h3">What it costs</h3>
+        <p>Free for the groups in our private beta. After that we expect a Trip Pass of
+           about <strong>$39 per trip</strong> &mdash; the organiser pays, or the group splits it
+           for roughly $8 each. Not a monthly subscription; you don&rsquo;t travel monthly.</p>
       </div>
-      <div>
-        <h3 style="font-family:var(--sans);font-size:17px;font-weight:700">Five flags have no automatic fix</h3>
-        <p style="color:var(--ink-soft);margin-top:10px;font-size:14.5px">A wrong date, a wrong route, a currency mismatch — the safe move depends on whether the traveller still wants the trip, which Relay cannot know. Those escalate to a person. We report coverage as <b>resolved outcomes, not proposed plans</b>, so the number stays honest about them.</p>
+      <div class="card">
+        <h3 class="h3">Who&rsquo;s building it</h3>
+        <p>Justin Long (founder) and Michael Duan (co-founder), with Allison on backend
+           and Esme on the groups using it. We&rsquo;re measuring ourselves on one thing this
+           quarter: whether a stalled decision closes in hours instead of a week.</p>
       </div>
     </div>
   </div>
 </section>
 
-<section id="pilot">
+<!-- ============ WAITLIST ============ -->
+<section id="waitlist" style="background:var(--sunk)">
   <div class="wrap">
-    <div class="cta-band">
-      <span class="eyebrow" style="color: var(--signal);">Now welcoming our first design partners</span>
-      <h2>Bring us your last 30 days of orders.</h2>
-      <p>Send a CSV export and we'll run it through Relay — no integration, no code. You get back
-        every payment-succeeded, booking-wrong case your team didn't catch, with the evidence for each
-        one. You keep the findings whether or not you become a customer.</p>
-      <div class="hero-ctas">
-        <a class="btn primary" href="contact.html?topic=partner">Analyze my last 30 days</a>
-        <a class="btn ghost" href="login.html?mode=signup&amp;next=app.html">Start free sandbox</a>
+    <div class="section-head">
+      <p class="eyebrow">Join the waitlist</p>
+      <h2 class="h2">Got a trip that&rsquo;s been &ldquo;happening&rdquo; since June?</h2>
+      <p class="lede">
+        We&rsquo;re onboarding a small number of real groups right now &mdash; 4 to 8 people,
+        travelling within 90 days, already arguing in a thread. Tell us about yours and
+        we&rsquo;ll set it up with you personally.
+      </p>
+    </div>
+
+    <div class="form-wrap">
+      <form id="wl-form" novalidate>
+        <div class="field">
+          <label for="wl-email">Email <span class="hint">&mdash; required</span></label>
+          <input type="email" id="wl-email" name="email" autocomplete="email"
+                 placeholder="you@example.com" required>
+        </div>
+
+        <div class="two">
+          <div class="field">
+            <label for="wl-name">Your name</label>
+            <input type="text" id="wl-name" name="name" autocomplete="name" placeholder="Optional">
+          </div>
+          <div class="field">
+            <label for="wl-size">How many people?</label>
+            <input type="number" id="wl-size" name="group_size" min="2" max="60" placeholder="e.g. 5">
+          </div>
+        </div>
+
+        <div class="field">
+          <label id="lbl-app">Which app is the group chat on?</label>
+          <div class="choices" role="radiogroup" aria-labelledby="lbl-app">
+            <label class="choice"><input type="radio" name="chat_app" value="imessage"><span>iMessage</span></label>
+            <label class="choice"><input type="radio" name="chat_app" value="whatsapp"><span>WhatsApp</span></label>
+            <label class="choice"><input type="radio" name="chat_app" value="other"><span>Something else</span></label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label id="lbl-when">When&rsquo;s the trip?</label>
+          <div class="choices" role="radiogroup" aria-labelledby="lbl-when">
+            <label class="choice"><input type="radio" name="trip_window" value="30d"><span>Next 30 days</span></label>
+            <label class="choice"><input type="radio" name="trip_window" value="1to3m"><span>1&ndash;3 months</span></label>
+            <label class="choice"><input type="radio" name="trip_window" value="3plus"><span>Further out</span></label>
+            <label class="choice"><input type="radio" name="trip_window" value="none"><span>No trip yet</span></label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="wl-note">What&rsquo;s the trip, and what&rsquo;s stuck?
+            <span class="hint">&mdash; optional, helps us pick who to onboard first</span></label>
+          <textarea id="wl-note" name="note" maxlength="2000"
+            placeholder="Five of us, Japan in December, nobody can agree on dates&hellip;"></textarea>
+        </div>
+
+        <button class="btn btn-primary btn-lg" type="submit" id="wl-submit" style="width:100%">
+          Join the waitlist
+        </button>
+        <p class="form-msg" id="wl-msg" role="status" aria-live="polite"></p>
+        <p class="fine" style="margin-top:14px">
+          We&rsquo;ll only email you about Relay. No list sharing, unsubscribe any time.
+          See our <a href="privacy.html">privacy notice</a>.
+        </p>
+      </form>
+
+      <div class="done" id="wl-done" role="status" aria-live="polite">
+        <h3 class="h3">You&rsquo;re on the list.</h3>
+        <p class="muted">We read every one of these. If your trip is inside 90 days you&rsquo;ll
+          probably hear from us this week &mdash; we onboard groups by hand right now.</p>
+        <p class="fine" style="margin-top:16px">
+          Know another organiser in the same situation? Send them
+          <a href="https://relay-travel.ai">relay-travel.ai</a>.</p>
       </div>
     </div>
   </div>
 </section>
 
-<div id="site-footer"><footer><div class="wrap"><div class="cols"><div class="col"><h4>Product</h4><a href="product.html">Overview</a><a href="pricing.html">Pricing</a><a href="demo.html">Live demo</a><a href="app.html">Console</a></div><div class="col"><h4>Developers</h4><a href="docs.html">API reference</a><a href="api-access.html">Request API access</a><a href="docs.html#webhooks">Webhooks</a><a href="docs.html#errors">Errors</a></div><div class="col"><h4>Company</h4><a href="contact.html">Contact</a><a href="contact.html?topic=partner">Become a design partner</a><a href="account.html">Your account</a></div><div class="col"><h4>Trust</h4><a href="security.html">Security</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="contact.html?topic=security">Security review</a></div></div><div class="base"><span>&copy; 2026 Relay &mdash; post-booking integrity for flight &amp; hotel orders.</span><span class="mono">relay-travel.ai</span></div></div></footer></div>
+</main>
 
-<script>
-</script>
+<footer class="foot">
+  <div class="wrap foot-in">
+    <a class="brand" href="/" aria-label="Relay — home">
+      <img class="light-only" src="wordmark-ink.png" alt="Relay" width="223" height="44" style="height:19px">
+      <img class="dark-only" src="wordmark-paper.png" alt="Relay" width="224" height="44" style="height:19px">
+    </a>
+    <a href="privacy.html">Privacy</a>
+    <a href="terms.html">Terms</a>
+    <a href="api.html">For developers</a>
+    <a href="mailto:tlong7@uw.edu">tlong7@uw.edu</a>
+    <span class="right">&copy; 2026 Relay</span>
+  </div>
+</footer>
+
 <script src="config.js"></script>
-<script src="setup.js"></script>
-<script src="nav.js"></script>
-<script>RelayNav.mount({ active: null });</script>
+<script src="waitlist.js"></script>
+<script>
+(function(){
+  var nav=document.getElementById('nav');
+  var onScroll=function(){ nav.classList.toggle('stuck', window.scrollY>8); };
+  onScroll(); window.addEventListener('scroll',onScroll,{passive:true});
+})();
+</script>
 </body>
 </html>

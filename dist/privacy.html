@@ -2,134 +2,99 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" href="favicon.png">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Privacy — Relay</title>
+<meta name="description" content="What Relay reads in a group chat, what stays private between you and Relay, and what we do with a waitlist email.">
+<link rel="icon" href="favicon.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
 <link rel="stylesheet" href="relay.css">
-<link rel="stylesheet" href="site.css">
-<title>Privacy Policy — Relay</title>
-<meta name="description" content="What Relay stores, how long it keeps it, who can see it, and what it is never used for.">
-<link rel="canonical" href="https://relay-travel.ai/privacy.html">
-<meta property="og:title" content="Privacy Policy — Relay">
-<meta property="og:description" content="What Relay stores, how long it keeps it, who can see it, and what it is never used for.">
-<meta property="og:type" content="website">
-<meta name="twitter:card" content="summary_large_image">
-<meta property="og:image" content="https://relay-travel.ai/og-image.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta name="twitter:image" content="https://relay-travel.ai/og-image.png">
 </head>
-<body class="page">
-<div id="nav"></div>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="nav"><div class="wrap nav-in">
+  <a class="brand" href="/" aria-label="Relay — home">
+    <img class="light-only" src="wordmark-ink.png" alt="Relay" width="223" height="44">
+    <img class="dark-only" src="wordmark-paper.png" alt="Relay" width="224" height="44">
+  </a>
+  <nav class="nav-links" aria-label="Main"><a class="btn btn-ghost" href="/">Back to site</a></nav>
+</div></header>
 
-<header class="page-head">
-  <div class="wrap narrow">
-    <span class="eyebrow">Privacy</span>
-    <h1>What we store, for how long, and what we never do with it.</h1>
-    <p class="lede">Written to be read, not to be survived. If anything here is unclear,
-      <a href="contact.html?topic=security">ask us</a> and we will fix the wording.</p>
-  </div>
-</header>
+<main id="main"><section><div class="wrap doc">
+  <p class="eyebrow">Privacy</p>
+  <h1 class="h2">What Relay sees, and what it keeps to itself.</h1>
+  <p class="fine" style="margin-top:12px">Last updated 6 October 2026. Relay is a private beta
+     run by a four-person team; this notice describes what we actually do today, and we will
+     update it before we do anything else.</p>
 
-<section style="padding-top:8px">
-  <div class="wrap narrow prose">
+  <h2>The short version</h2>
+  <p>Relay sits in a group chat to help a group decide on a trip. What you tell Relay
+     in a one-to-one message is <strong>never posted to the group</strong>. We use it to work
+     out which options suit everyone, and the group only ever sees the conclusion &mdash;
+     not whose constraint produced it.</p>
 
-    <h2>The short version</h2>
-    <ul>
-      <li>We store the order data you send us, because comparing it is the entire product.</li>
-      <li><b>We do not train any model on your data</b>, and we do not sell or share it.</li>
-      <li>We never receive card numbers. Relay handles charge <i>references</i>, not payment credentials.</li>
-      <li>You can ask for an export or a deletion at any time and we will do it by hand within seven days.</li>
-    </ul>
+  <h2>In a group chat</h2>
+  <p>When an organiser adds Relay to a group, Relay can see messages sent in that group
+     while it is a member. We store:</p>
+  <ul>
+    <li>the trip being planned, and who is part of it;</li>
+    <li>messages addressed to Relay, and replies that are votes or answers to its questions;</li>
+    <li>the options Relay proposed, who approved what, and when.</li>
+  </ul>
+  <p>Relay stays quiet in the thread unless it is addressed or it has something to decide.
+     We do not use the contents of your group chat to train general-purpose models.</p>
 
-    <h2>Who is who</h2>
-    <p>If you are a Relay customer, you are the <b>controller</b> of the traveller data you send, and
-      Relay is a <b>processor</b> acting on your instructions. If you are a traveller whose booking
-      passed through a Relay customer, your relationship is with them; we will forward any request you
-      send us to the relevant customer.</p>
+  <h2>In a private message</h2>
+  <p>Relay asks each traveller directly for departure city, dates, budget and preferences.
+     That is held against your person record for the trip and is <strong>not</strong> revealed
+     to other members of the group, including the organiser. Relay may reflect it back as an
+     aggregate &mdash; &ldquo;this week clears all five calendars&rdquo; &mdash; without attributing it.</p>
 
-    <h2>What we collect</h2>
-    <h3>Order data you send to the API</h3>
-    <p>For each order: your own order identifier, and the three views of it — amounts, currencies,
-      routes, departure dates, passenger names, refund and capture status, processor and supplier
-      names, and charge identifiers. Passenger names and travel dates are personal data. We ask for
-      them because a name or date mismatch is one of the failures Relay exists to detect; if you can
-      detect what you need without sending names, send fewer fields — a field you omit is never
-      treated as a mismatch.</p>
-    <h3>Account data</h3>
-    <p>Your email address, an optional display name and company name, and which authentication
-      provider you used. Passwords, when used, are hashed by Supabase Auth and never visible to us.</p>
-    <h3>Operational data</h3>
-    <p>API key hashes, key last-used timestamps, webhook endpoints and their signing secrets, and
-      records of raw provider webhooks when you connect a provider.</p>
-    <h3>Enquiries</h3>
-    <p>If you use the contact or API-access forms, we keep what you typed so we can reply.</p>
+  <h2>The waitlist form</h2>
+  <p>If you sign up on this site we store your email address and whatever else you chose to
+     give us: name, group size, which chat app your group uses, when the trip is, and your
+     note. We also record your browser&rsquo;s user-agent string and which page you submitted
+     from, to tell real signups from bots.</p>
+  <p>We use it to decide who to onboard first and to email you about Relay. We do not sell it,
+     share it with advertisers, or add you to anyone else&rsquo;s list. Reply to any email from us,
+     or write to <a href="mailto:tlong7@uw.edu">tlong7@uw.edu</a>, and we will delete you.</p>
 
-    <h2>What we do not collect</h2>
-    <ul>
-      <li><b>No card numbers, CVVs, or bank credentials.</b> Relay sees a charge reference such as
-        <code>ch_1P…</code>, never the instrument behind it.</li>
-      <li><b>No third-party analytics, advertising, or tracking pixels.</b> There is no Google
-        Analytics on this site. We considered it and decided against putting a third-party tracker on
-        a product that handles other people's payment data.</li>
-      <li><b>No cookies for advertising.</b> The only browser storage we use is the session token
-        that keeps you signed in, and a local preference or two in the console.</li>
-    </ul>
+  <h2>Who else processes it</h2>
+  <ul>
+    <li><strong>Supabase</strong> &mdash; our database and hosting.</li>
+    <li><strong>The messaging provider</strong> for the channel your group uses, which carries
+        the messages themselves.</li>
+    <li><strong>A large language model provider</strong>, which processes message content to
+        extract constraints, draft options and read votes. Content sent for this purpose is not
+        used to train their models.</li>
+  </ul>
 
-    <h2>How long we keep it</h2>
-    <ul>
-      <li><b>Orders</b> — for as long as your account is open, so that history stays queryable. Sandbox
-        data may be cleared periodically.</li>
-      <li><b>Raw provider webhook payloads</b> — kept append-only so a normalisation bug can be
-        replayed rather than losing evidence. These can be purged on request.</li>
-      <li><b>Account data</b> — until you delete the account.</li>
-      <li><b>Enquiries</b> — until they are handled, then as long as is useful for follow-up.</li>
-    </ul>
-    <p>On account deletion, order data is removed by database cascade — deleting the workspace deletes
-      its orders, keys, webhooks and connections with it.</p>
+  <h2>How long we keep it</h2>
+  <p>Trip data is kept while the trip is live and for 12 months after, so a returning group
+     starts from what was already decided. Waitlist entries are kept until you ask us to remove
+     them or until we close the beta list. Ask us to delete a trip and we delete it, including
+     the private constraints attached to it.</p>
 
-    <h2>Who can see it</h2>
-    <p>Your workspace's data is readable only by members of that workspace, enforced by row-level
-      security in PostgreSQL (see <a href="security.html">Security</a>). No other customer can query
-      it. Relay staff — currently one person — can technically reach the database for support and
-      debugging; we access customer data only when needed to fix something, and we would rather you
-      ask us to look than assume we already have.</p>
+  <h2>Your rights</h2>
+  <p>You can ask for a copy of what we hold about you, ask us to correct it, or ask us to delete
+     it. One email to <a href="mailto:tlong7@uw.edu">tlong7@uw.edu</a> is enough; we aim to
+     answer within seven days. If you are in the UK or EU you also have the right to complain
+     to your local data protection authority.</p>
 
-    <h2>Subprocessors</h2>
-    <ul>
-      <li><b>Supabase</b> — database, authentication and function hosting (US East).</li>
-      <li><b>Cloudflare</b> — static site hosting and DNS.</li>
-      <li><b>Stripe</b> — subscription billing, if and when you pay us. Stripe handles card details
-        directly; they never pass through Relay.</li>
-    </ul>
-    <p>We will update this list before adding another one.</p>
+  <h2>Children</h2>
+  <p>Relay is not for people under 16. If a group includes someone under 16, do not add Relay
+     to it.</p>
 
-    <h2>International transfers</h2>
-    <p>Data is processed in the United States. If you are in the EEA or UK and that matters for your
-      compliance position, raise it before sending live data — a different deployment region is a
-      conversation, not a blocker.</p>
+  <h2>Changes</h2>
+  <p>If we change how any of this works we will update this page and date it. Material changes
+     get an email to everyone on the list.</p>
+</div></section></main>
 
-    <h2>Your rights</h2>
-    <p>Access, correction, export, deletion, and objection. Email <b>yduan2435@gmail.com</b> or use
-      the <a href="contact.html?topic=security">contact form</a>. We respond within seven days and
-      confirm in writing when it is done. There is no charge and no form to fill in.</p>
-
-    <h2>Changes</h2>
-    <p>If we change anything material, we will email account holders rather than quietly updating the
-      date at the bottom of this page.</p>
-
-    <p class="foot-note">Last updated 1 September 2026. Contact: yduan2435@gmail.com</p>
-  </div>
-</section>
-
-<div id="site-footer"></div>
-<script src="config.js"></script>
-<script src="setup.js"></script>
-<script src="nav.js"></script>
-<script>RelayNav.mount({ active: null });</script>
+<footer class="foot"><div class="wrap foot-in">
+  <a href="/">Home</a><a href="terms.html">Terms</a>
+  <a href="mailto:tlong7@uw.edu">tlong7@uw.edu</a>
+  <span class="right">&copy; 2026 Relay</span>
+</div></footer>
 </body>
 </html>
