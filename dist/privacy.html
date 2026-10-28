@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Privacy — Relay</title>
-<meta name="description" content="What Relay reads in a group chat, what stays private between you and Relay, and what we do with a waitlist email.">
+<meta name="description" content="What Relay stores when you plan or book a trip by text, what stays private between you and Relay, who processes it, and how to delete it.">
 <link rel="icon" href="favicon.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,32 +24,59 @@
 <main id="main"><section><div class="wrap doc">
   <p class="eyebrow">Privacy</p>
   <h1 class="h2">What Relay sees, and what it keeps to itself.</h1>
-  <p class="fine" style="margin-top:12px">Last updated 6 October 2026. Relay is a private beta
+  <p class="fine" style="margin-top:12px">Last updated 27 October 2026. Relay is a private beta
      run by a four-person team; this notice describes what we actually do today, and we will
      update it before we do anything else.</p>
 
   <h2>The short version</h2>
-  <p>Relay sits in a group chat to help a group decide on a trip. What you tell Relay
-     in a one-to-one message is <strong>never posted to the group</strong>. We use it to work
-     out which options suit everyone, and the group only ever sees the conclusion &mdash;
-     not whose constraint produced it.</p>
+  <p>Relay is a travel agent you text. What you tell Relay in your conversation with it is
+     <strong>never shown to anyone else on the trip</strong>, including the organiser. Everyone
+     sees the options and the outcome, not whose answer produced them. If you ask us to book,
+     we collect the details needed to book you and use them only for that.</p>
 
-  <h2>In a group chat</h2>
-  <p>When an organiser adds Relay to a group, Relay can see messages sent in that group
-     while it is a member. We store:</p>
+  <h2>How Relay reaches you</h2>
+  <p>Relay works in private iMessage conversations; it does not join group chats. The organiser
+     of a trip gives Relay the phone numbers of the people they want to invite, and Relay messages
+     each of them to introduce itself and the trip. If you don&rsquo;t want to take part, tell Relay
+     you&rsquo;re out, or write to <a href="mailto:tlong7@uw.edu">tlong7@uw.edu</a> and we will delete
+     your number.</p>
+
+  <h2>What we store</h2>
+  <p>For each person on a trip:</p>
   <ul>
-    <li>the trip being planned, and who is part of it;</li>
-    <li>messages addressed to Relay, and replies that are votes or answers to its questions;</li>
-    <li>the options Relay proposed, who approved what, and when.</li>
+    <li>your phone number and the name you give Relay;</li>
+    <li>your answers for the trip: where you&rsquo;re travelling from, your dates, your budget and
+        what you want or want to avoid;</li>
+    <li>your vote, and the decision the trip reached;</li>
+    <li>your most recent messages with Relay (up to 40), so it can follow the conversation.</li>
   </ul>
-  <p>Relay stays quiet in the thread unless it is addressed or it has something to decide.
-     We do not use the contents of your group chat to train general-purpose models.</p>
+  <p>Relay also remembers some things <strong>across trips</strong>, so you don&rsquo;t have to repeat
+     them: your home airport, travel preferences, and seat and bag preferences.</p>
 
-  <h2>In a private message</h2>
-  <p>Relay asks each traveller directly for departure city, dates, budget and preferences.
-     That is held against your person record for the trip and is <strong>not</strong> revealed
-     to other members of the group, including the organiser. Relay may reflect it back as an
-     aggregate &mdash; &ldquo;this week clears all five calendars&rdquo; &mdash; without attributing it.</p>
+  <h2>When you ask us to book</h2>
+  <p>When you reply &ldquo;book it&rdquo;, Relay asks for what an airline and hotel need: your legal
+     name, date of birth and email, and optionally your loyalty program numbers, Known Traveler
+     Number and seat preference. Relay keeps these for your next booking unless you ask it to
+     forget them.</p>
+  <p>These details go to our team by email. We use them to book your trip by hand, and share them
+     only with the airlines and hotels you&rsquo;re booked with, as they require. You pay through a
+     secure payment link from our payment provider. <strong>Relay will never ask you to text a card
+     number.</strong></p>
+
+  <h2>Seeing and deleting what Relay remembers</h2>
+  <ul>
+    <li>Text Relay &ldquo;what do you know about me&rdquo; to see what it remembers.</li>
+    <li>Text &ldquo;forget my birthday&rdquo;, or &ldquo;delete my info&rdquo; to remove everything it
+        remembers about you.</li>
+    <li>To delete your trips and messages too, write to
+        <a href="mailto:tlong7@uw.edu">tlong7@uw.edu</a>.</li>
+  </ul>
+
+  <h2>Where it&rsquo;s kept</h2>
+  <p>Relay&rsquo;s working data is kept in a private file on the computer that runs it, and a copy
+     of trips, votes and decisions is kept in our database. We don&rsquo;t copy identity details
+     (legal names, birth dates, loyalty and Known Traveler numbers) into the database unless we
+     need them there to complete a booking.</p>
 
   <h2>The waitlist form</h2>
   <p>If you sign up on this site we store your email address and whatever else you chose to
@@ -62,19 +89,25 @@
 
   <h2>Who else processes it</h2>
   <ul>
-    <li><strong>Supabase</strong> &mdash; our database and hosting.</li>
-    <li><strong>The messaging provider</strong> for the channel your group uses, which carries
-        the messages themselves.</li>
-    <li><strong>A large language model provider</strong>, which processes message content to
-        extract constraints, draft options and read votes. Content sent for this purpose is not
-        used to train their models.</li>
+    <li><strong>Photon</strong> &mdash; delivers Relay&rsquo;s iMessages.</li>
+    <li><strong>Anthropic</strong> &mdash; its Claude models read your messages to understand
+        them, and write Relay&rsquo;s replies and options. Under Anthropic&rsquo;s commercial terms,
+        this content is not used to train its models.</li>
+    <li><strong>Resend</strong> &mdash; sends booking requests, including your booking details, to
+        our team by email.</li>
+    <li><strong>Supabase</strong> &mdash; our database, including the waitlist.</li>
+    <li><strong>Duffel</strong> &mdash; flight prices. It receives only routes and dates, nothing
+        about you.</li>
+    <li><strong>The airlines, hotels and payment provider</strong> for any trip you ask us to book.</li>
   </ul>
 
   <h2>How long we keep it</h2>
   <p>Trip data is kept while the trip is live and for 12 months after, so a returning group
-     starts from what was already decided. Waitlist entries are kept until you ask us to remove
+     starts from what was already decided. What Relay remembers across trips is kept until you
+     ask it to forget it. Booking records are kept as long as the booking needs them and as long
+     as the law requires for our records. Waitlist entries are kept until you ask us to remove
      them or until we close the beta list. Ask us to delete a trip and we delete it, including
-     the private constraints attached to it.</p>
+     the private answers attached to it.</p>
 
   <h2>Your rights</h2>
   <p>You can ask for a copy of what we hold about you, ask us to correct it, or ask us to delete
@@ -83,8 +116,7 @@
      to your local data protection authority.</p>
 
   <h2>Children</h2>
-  <p>Relay is not for people under 16. If a group includes someone under 16, do not add Relay
-     to it.</p>
+  <p>Relay is not for people under 16. Don&rsquo;t give Relay the number of anyone under 16.</p>
 
   <h2>Changes</h2>
   <p>If we change how any of this works we will update this page and date it. Material changes
